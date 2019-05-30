@@ -15,7 +15,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
 
@@ -25,12 +25,12 @@
                 app:layout_scrollFlags="scroll|enterAlways" />
 
             <ImageView
+                android:id="@+id/imageView2"
                 android:layout_width="wrap_content"
                 android:layout_height="70dp"
-                android:id="@+id/imageView2"
-                android:src="@drawable/ic_launcher_background"
                 android:layout_gravity="center"
-                android:layout_marginTop="20dp" />
+                android:layout_marginTop="20dp"
+                android:src="@drawable/ic_launcher_background" />
 
             <TextView
                 android:id="@+id/areaTv"
@@ -38,8 +38,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginBottom="5dp"
-                android:text=""
-                android:layout_marginTop="5dp" />
+                android:layout_marginTop="5dp"
+                android:text="" />
 
             <TextView
                 android:id="@+id/nameTv"
@@ -47,139 +47,27 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginBottom="10dp"
-                android:text=""/>
+                android:text="" />
 
             <LinearLayout
-                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
                 android:background="@android:color/black"
-                android:layout_marginBottom="10dp"></LinearLayout>
+                android:orientation="vertical"></LinearLayout>
 
-            <LinearLayout
-                android:orientation="vertical"
+            <TextView
+                android:id="@+id/desTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="10dp"
+                android:text="Tessss" />
+
+            <ListView
+                android:id="@+id/list_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ln_1"
-                    android:weightSum="3"
-                    android:layout_marginTop="30dp">
-
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/ln_call"
-                        android:layout_weight="1"
-                        android:layout_gravity="center">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="70dp"
-                            android:id="@+id/imageView5"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_launcher_background"
-                            android:layout_marginBottom="10dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="CALL"
-                            android:id="@+id/textView3"
-                            android:layout_gravity="center"
-                            android:textColor="@android:color/black"
-                            android:textSize="16dp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/ln_visit"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="70dp"
-                            android:id="@+id/imageView8"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_launcher_background"
-                            android:layout_marginBottom="10dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="VISIT"
-                            android:id="@+id/textView8"
-                            android:layout_gravity="center"
-                            android:textColor="@android:color/black"
-                            android:textSize="16dp" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/ln_close"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="70dp"
-                            android:id="@+id/imageView9"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_launcher_background"
-                            android:layout_marginBottom="10dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="CLOSE"
-                            android:id="@+id/textView9"
-                            android:layout_gravity="center"
-                            android:textColor="@android:color/black"
-                            android:textSize="16dp" />
-
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:id="@+id/ln_2"
-                    android:layout_height="wrap_content">
-
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/ln_verifikasi"
-                        android:layout_marginTop="30dp">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="70dp"
-                            android:id="@+id/imageView90"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_launcher_background"
-                            android:layout_marginBottom="10dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="VERIFIKASI"
-                            android:id="@+id/textView90"
-                            android:layout_gravity="center"
-                            android:textColor="@android:color/black"
-                            android:textSize="16dp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
+                android:layout_height="wrap_content" />
 
 
         </LinearLayout>
