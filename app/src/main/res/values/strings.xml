@@ -1,3 +1,26 @@
 <resources>
     <string name="app_name">SalesTracking</string>
+    <string name="prompt">Pilih tipe donatur </string>
+
+    <string-array name="visit_tipeDonatur_arrays">
+        <item>Jemput Donasi</item>
+        <item>Meminta Pertemuan Kembali</item>
+        <item>Hubungi Kembali</item>
+    </string-array>
+
+    <string name="prompt_pay">Pilih tipe pembayaran </string>
+
+    <string-array name="pay_arrays">
+        <item>Transfer</item>
+        <item>Cash</item>
+    </string-array>
+
+    <string name="prompt_bank">Pilih tipe bank </string>
+
+    <string-array name="bank_arrays">
+        <item>BCA - 6825134917</item>
+        <item>MANDIRI - 6825134917</item>
+        <item>BRI - 6825134917</item>
+        <item>BNI - 6825134917</item>
+    </string-array>
 </resources>
