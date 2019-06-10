@@ -1,20 +1,29 @@
 package com.user.salestracking;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -34,13 +43,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView cabangtv, namaTv,dessTv;
+    private TextView dessTv;
     private SessionManager session;
     private HashMap<String, String> user;
     private ListView listView;
@@ -53,6 +64,26 @@ public class MainActivity extends AppCompatActivity {
     Button btn_call, btn_visit, btn_closing, btn_save;
     View dialogView;
 
+    private NavigationView navigationView;
+    private DrawerLayout drawer;
+    private View navHeader;
+    private TextView txtName, txtCabang;
+    private Toolbar toolbar;
+
+    public static int navItemIndex = 0;
+
+    private static final String TAG_HOME = "home";
+    private static final String TAG_PHOTOS = "photos";
+    private static final String TAG_MOVIES = "movies";
+    private static final String TAG_NOTIFICATIONS = "notifications";
+    private static final String TAG_SETTINGS = "settings";
+    public static String CURRENT_TAG = TAG_HOME;
+
+    private String[] activityTitles;
+
+    private boolean shouldLoadHomeFragOnBackPress = true;
+    private Handler mHandler;
+
     private String[] pay = {
             "Transfer",
             "Cash"
@@ -63,19 +94,32 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        mHandler = new Handler();
         dialog = new ProgressDialog(MainActivity.this);
         donatur_list = new ArrayList<>();
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        navHeader = navigationView.getHeaderView(0);
+        txtName = (TextView) navHeader.findViewById(R.id.name);
+        txtCabang = (TextView) navHeader.findViewById(R.id.website);
+
+        activityTitles = getResources().getStringArray(R.array.nav_item_activity_titles);
+
+        setUpNavigationView();
         listView = (ListView) findViewById(R.id.list_view);
 
-        cabangtv = (TextView) findViewById(R.id.areaTv);
-        namaTv = (TextView)findViewById(R.id.nameTv);
         dessTv = (TextView) findViewById(R.id.desTv);
 
         session = new SessionManager(getApplicationContext());
         user = session.getUserDetails();
 
-        cabangtv.setText(user.get(SessionManager.KEY_CABANG));
-        namaTv.setText(user.get(SessionManager.KEY_NAMA));
+        txtName.setText(user.get(SessionManager.KEY_NAMA));
+        txtCabang.setText(user.get(SessionManager.KEY_CABANG));
+
         if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("0")){
             dessTv.setText("Sales Marketing");
         }else if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
@@ -95,6 +139,97 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+
+    private void setUpNavigationView() {
+        //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+
+            // This method will trigger on item Click of navigation menu
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+                //Check to see which item was being clicked and perform appropriate action
+                switch (menuItem.getItemId()) {
+                    case R.id.list_call:
+//                        startActivity(new Intent(MainActivity.this, AboutUsActivity.class));
+//                        drawer.closeDrawers();
+//                        return true;
+                        break;
+                    case R.id.list_visit:
+
+                        break;
+                    case R.id.list_closing:
+
+                        break;
+                    case R.id.nav_about_us:
+                        // launch new intent instead of loading fragment
+
+                    case R.id.create_donatur:
+
+                        break;
+                    case R.id.list_donatur:
+                        // launch new intent instead of loading fragment
+                        break;
+                    case R.id.logout:
+                        popup("Anda Yakin ingin keluar dari aplikasi?");
+                        return true;
+                    default:
+                        navItemIndex = 0;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.list_call:
+                    toolbar.setTitle("LIST CALL");
+                    return true;
+                case R.id.list_visit:
+                    toolbar.setTitle("LIST VISIT");
+                    return true;
+                case R.id.list_closing:
+                    toolbar.setTitle("LIST CLOSING");
+                    return true;
+            }
+
+            return false;
+        }
+    };
+
+
+
+    private void popup(String message){
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        logout();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.setTitle("Logout?");
+        alert.show();
+    }
+
+    private void logout(){
+        session.logoutUser();
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void request() {
@@ -199,13 +334,16 @@ public class MainActivity extends AppCompatActivity {
         dialogs.show();
     }
 
-    private void dialogCall(int pos) {
+    private void dialogCall(final int pos) {
         dialogs = new AlertDialog.Builder(MainActivity.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_call, null);
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
+        final String url = Api_url.URL_INSERT_CALL;
+
+        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
         txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
         txt_catatan  = (EditText) dialogView.findViewById(R.id.txt_catatan);
         txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
@@ -221,7 +359,8 @@ public class MainActivity extends AppCompatActivity {
                 if (txt_catatan.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "Catatan tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
-                    Toast.makeText(getApplicationContext(), "BTN CALL 1", Toast.LENGTH_SHORT).show();
+                    request_post("CALL", String.valueOf(spinner.getSelectedItem()), txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+                    , donatur_list.get(pos).getNo_hp(), txt_catatan.getText().toString(), "1", url, txt_nama.getText().toString());
                 }
 
             }
@@ -230,13 +369,16 @@ public class MainActivity extends AppCompatActivity {
         dialogs.show();
     }
 
-    private void dialogVisit(int pos) {
+    private void dialogVisit(final int pos) {
         dialogs = new AlertDialog.Builder(MainActivity.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_visit, null);
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
+        final String url = Api_url.URL_INSERT_VISIT;
+
+        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
         txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
         txt_catatan  = (EditText) dialogView.findViewById(R.id.txt_catatan);
         txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
@@ -252,7 +394,8 @@ public class MainActivity extends AppCompatActivity {
                 if (txt_catatan.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "Catatan tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
-                    Toast.makeText(getApplicationContext(), "BTN CALL 2", Toast.LENGTH_SHORT).show();
+                    request_post("VISIT", String.valueOf(spinner.getSelectedItem()), txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+                            , donatur_list.get(pos).getNo_hp(), txt_catatan.getText().toString(), "2", url, txt_nama.getText().toString());
                 }
 
             }
@@ -367,5 +510,70 @@ public class MainActivity extends AppCompatActivity {
                 .setDoneText("Yes")
                 .setCancelText("No");
         cdp.show((getSupportFragmentManager()),"Promise Date");
+    }
+
+    private void request_post(final String aktivitas, final String hasil_aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
+                              final String noHp, final String catatan, final String type, final String url, final String assign) {
+        class insert_call extends AsyncTask<Void, Void, String> {
+
+
+            @Override
+            protected String doInBackground(Void... voids) {
+                //creating request handler object
+                RequestHandler requestHandler = new RequestHandler();
+
+                Date c = Calendar.getInstance().getTime();
+                System.out.println("Current time => " + c);
+
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy hh:mm");
+                String formattedDate = df.format(c);
+
+                //creating request parameters
+                HashMap<String, String> params = new HashMap<>();
+                params.put("aktivitas", aktivitas);
+                params.put("hasil_aktivitas", hasil_aktivitas);
+                params.put("nama", nama);
+                params.put("email", email);
+                params.put("alamat", alamat);
+                params.put("jenis_kelamin", jenis_kelamin);
+                params.put("no_hp", noHp);
+                params.put("catatan", catatan);
+                params.put("type_aktivitas", type);
+                params.put("date_record", formattedDate);
+                params.put("assign_by", assign);
+                //returing the response
+                return requestHandler.sendPostRequest(url, params);
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                //displaying the progress bar while user registers on the server
+                dialog.setMessage("please wait...");
+                dialog.show();
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                Log.d("result", result);
+                dialog.dismiss();
+
+                try {
+                    JSONObject obj = new JSONObject(result);
+                    if (obj.getInt("status") == 0) {
+                        Toast.makeText(getApplicationContext(), obj.getString("message"), Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        Toast.makeText(getApplicationContext(), obj.getString("message"), Toast.LENGTH_SHORT).show();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        insert_call ru = new insert_call();
+        ru.execute();
     }
 }

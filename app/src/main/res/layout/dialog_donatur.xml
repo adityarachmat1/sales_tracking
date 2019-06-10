@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:background="@android:drawable/editbox_background_normal"/>
 
     <EditText
@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:background="@android:drawable/editbox_background_normal"/>
 
     <EditText
@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:background="@android:drawable/editbox_background_normal"/>
 
     <EditText
@@ -46,7 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:background="@android:drawable/editbox_background_normal"/>
 
     <EditText
@@ -55,7 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:background="@android:drawable/editbox_background_normal"/>
 
     <LinearLayout
@@ -69,7 +69,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/colorAccent"
+            android:background="@color/colorPrimary"
             android:textColor="@android:color/white"
             android:text="Call" />
 
@@ -80,7 +80,7 @@
             android:layout_weight="1"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:background="@color/colorAccent"
+            android:background="@color/colorPrimary"
             android:textColor="@android:color/white"
             android:text="Visit" />
 
@@ -89,7 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/colorAccent"
+            android:background="@color/colorPrimary"
             android:textColor="@android:color/white"
             android:text="Closing" />
     </LinearLayout>

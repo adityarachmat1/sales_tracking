@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:text="Aktivitas" />
 
     <EditText
@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:text="Tipe Transfer" />
 
     <Spinner
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:text="Akun BANK" />
 
     <Spinner
@@ -58,7 +58,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:text="Nama" />
 
     <EditText
@@ -75,7 +75,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:text="Tanggal Transfer" />
 
     <TextView
@@ -99,7 +99,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/colorAccent"
+            android:background="@color/colorPrimary"
             android:textColor="@android:color/white"
             android:text="SAVE" />
     </LinearLayout>
