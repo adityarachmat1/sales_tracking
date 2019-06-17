@@ -5,7 +5,12 @@
         <menu>
             <item
                 android:id="@+id/create_donatur"
-                android:title="Donatur Baru" />
+                android:title="Create Donatur Baru" />
+
+            <item
+                android:id="@+id/create_akun"
+                android:title="Create Akun Baru" />
+
             <item
                 android:id="@+id/list_donatur"
                 android:title="List Donatur" />
@@ -23,7 +28,7 @@
             android:title="@string/list_visit" />
         <item
             android:id="@+id/list_closing"
-            android:icon="@drawable/ic_close_black_24dp"
+            android:icon="@drawable/ic_check_circle_black_24dp"
             android:title="@string/list_closing" />
     </group>
 

@@ -76,6 +76,24 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:textColor="@color/colorPrimary"
+        android:text="Nominal" />
+
+    <EditText
+        android:id="@+id/txt_nominal"
+        android:hint="Rp."
+        android:inputType="number"
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:background="@android:drawable/editbox_background_normal"/>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:textColor="@color/colorPrimary"
         android:text="Tanggal Transfer" />
 
     <TextView

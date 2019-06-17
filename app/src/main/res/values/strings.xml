@@ -10,9 +10,16 @@
 
     <string name="prompt_pay">Pilih tipe pembayaran </string>
 
+    <string name="prompt_jk">Pilih Jenis Kelamin </string>
+
     <string-array name="pay_arrays">
         <item>Transfer</item>
         <item>Cash</item>
+    </string-array>
+
+    <string-array name="jk_arrays">
+        <item>Pria</item>
+        <item>Perempuan</item>
     </string-array>
 
     <string name="prompt_bank">Pilih tipe bank </string>

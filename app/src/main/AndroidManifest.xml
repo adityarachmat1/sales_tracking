@@ -23,6 +23,15 @@
         <activity android:name=".LoginActivity"
             android:screenOrientation="portrait">
         </activity>
+        <activity android:name=".List_Call"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".List_visit"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".List_closing"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>
