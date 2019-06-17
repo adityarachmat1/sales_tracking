@@ -14,17 +14,19 @@
         android:paddingRight="20dp">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="220dp">
+            android:layout_height="220dp"
+            android:gravity="center"
+            android:orientation="vertical">
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="130dp"
-                android:id="@+id/imageView"
-                android:src="@drawable/ic_launcher_background"
-                android:layout_marginTop="40dp"
-                android:layout_gravity="center" />
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="SALES TRACKING"
+                android:textColor="@color/bpDarker_blue"
+                android:textSize="24dp" />
         </LinearLayout>
 
         <android.support.design.widget.TextInputLayout
@@ -58,8 +60,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dip"
+            android:background="@color/bpDarker_blue"
             android:text="Login"
-            android:background="#f96d21"
             android:textColor="#ffffff" />
 
     </LinearLayout>

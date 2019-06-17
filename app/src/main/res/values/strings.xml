@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SalesTracking</string>
+    <string name="app_name">Sales Tracking</string>
     <string name="prompt">Pilih tipe donatur </string>
 
     <string-array name="visit_tipeDonatur_arrays">
@@ -10,9 +10,16 @@
 
     <string name="prompt_pay">Pilih tipe pembayaran </string>
 
+    <string name="prompt_jk">Pilih Jenis Kelamin </string>
+
     <string-array name="pay_arrays">
         <item>Transfer</item>
         <item>Cash</item>
+    </string-array>
+
+    <string-array name="jk_arrays">
+        <item>Pria</item>
+        <item>Perempuan</item>
     </string-array>
 
     <string name="prompt_bank">Pilih tipe bank </string>
@@ -23,4 +30,33 @@
         <item>BRI - 6825134917</item>
         <item>BNI - 6825134917</item>
     </string-array>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="openDrawer">open_drawer</string>
+    <string name="closeDrawer">close_drawer</string>
+
+    <!-- Navigation Drawer menu labels -->
+    <string name="list_call">List Call</string>
+    <string name="list_visit">List Visit</string>
+    <string name="list_closing">List Closing</string>
+    <string name="nav_about_us">About Us</string>
+
+    <!-- Toolbar titles when navigation menu item is selected -->
+    <string-array name="nav_item_activity_titles">
+        <item>Home</item>
+        <item>Photos</item>
+        <item>Movies</item>
+        <item>Notifications</item>
+        <item>Settings</item>
+    </string-array>
+
+    <string name="activity_title_about_us">About Us</string>
+    <string name="activity_title_privacy_policy">Privacy Policy</string>
+    <string name="action_clear_all">Clear All</string>
+    <string name="action_logout">Logout</string>
+    <string name="action_mark_all_read">Mark All as Read</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="logout">Logout</string>
+
 </resources>
