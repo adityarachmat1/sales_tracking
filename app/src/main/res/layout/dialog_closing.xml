@@ -101,10 +101,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
         android:textSize="18dp"
         android:background="@android:drawable/editbox_background_normal"
         android:hint="Tanggal"
         android:textColor="@android:color/black" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Capture Transfer / cash"
+        android:textColor="@color/bpWhite"
+        android:id="@+id/buttonSelect"
+        android:background="@color/colorPrimary"
+        android:layout_margin="10dp"/>
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:id="@+id/imageView"
+        android:layout_gravity="center"
+        android:visibility="visible"/>
 
     <LinearLayout
         android:layout_width="match_parent"

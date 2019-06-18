@@ -300,7 +300,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
     private void dialogFormDetail(final int pos) {
         dialogs = new AlertDialog.Builder(List_closing.this);
         inflater = getLayoutInflater();
-        dialogView = inflater.inflate(R.layout.dialog_detail_call, null);
+        dialogView = inflater.inflate(R.layout.dialog_detail_closing, null);
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
@@ -308,21 +308,33 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         txt_email  = (TextView) dialogView.findViewById(R.id.tv_email);
         txt_alamat  = (TextView) dialogView.findViewById(R.id.tv_alamat);
         TextView tv_noHp = (TextView) dialogView.findViewById(R.id.tv_noHp);
-        TextView tv_noted = (TextView) dialogView.findViewById(R.id.tv_note);
+        TextView tv_type_transfer = (TextView) dialogView.findViewById(R.id.tv_type_transfer);
+        TextView tv_akun_bank = (TextView) dialogView.findViewById(R.id.tv_akun_bank);
+        TextView tv_nominal = (TextView) dialogView.findViewById(R.id.tv_nominal);
         TextView tv_aktivitas = (TextView) dialogView.findViewById(R.id.tv_aktivitas);
         TextView tv_hsl_aktivitas = (TextView) dialogView.findViewById(R.id.tv_hsl_aktivitas);
         TextView tv_date = (TextView) dialogView.findViewById(R.id.tv_date);
         TextView tv_registeredBy = (TextView) dialogView.findViewById(R.id.tv_registeredBy);
+        LinearLayout ln_akun_bank = (LinearLayout) dialogView.findViewById(R.id.ln_akun_bank);
 
         txt_nama.setText(dataListClosing.get(pos).getNama());
         txt_email.setText(dataListClosing.get(pos).getEmail());
         txt_alamat.setText(dataListClosing.get(pos).getAlamat());
         tv_noHp.setText(dataListClosing.get(pos).getNo_hp());
+        tv_type_transfer.setText(dataListClosing.get(pos).getType_transfer());
+        tv_nominal.setText(dataListClosing.get(pos).getNominal());
 //        tv_noted.setText(dataListClosing.get(pos).getCatatan());
         tv_aktivitas.setText(dataListClosing.get(pos).getAktivitas());
 //        tv_hsl_aktivitas.setText(dataListClosing.get(pos).getHasil_aktivitas());
         tv_date.setText(dataListClosing.get(pos).getDate_record());
         tv_registeredBy.setText(dataListClosing.get(pos).getAssign_by());
+
+        if (dataListClosing.get(pos).getAkun_bank().equals("")){
+            ln_akun_bank.setVisibility(View.GONE);
+        }else {
+            ln_akun_bank.setVisibility(View.VISIBLE);
+            tv_akun_bank.setText(dataListClosing.get(pos).getAkun_bank());
+        }
 
         dialogs.show();
     }
