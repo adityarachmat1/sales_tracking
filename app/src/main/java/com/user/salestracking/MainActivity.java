@@ -5,8 +5,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
@@ -20,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -46,12 +51,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -62,6 +73,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SessionManager session;
@@ -93,6 +107,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             "Transfer",
             "Cash"
     };
+
+    ProgressDialog progressDialog ;
+    Button GetImageFromGalleryButton;
+    ImageView ShowSelectedImage;
+    Bitmap FixBitmap;
+    String ImageTag = "image_tag" ;
+    String ImageName = "image_data" ;
+    ByteArrayOutputStream byteArrayOutputStream ;
+    byte[] byteArray ;
+    String ConvertImage ;
+    HttpURLConnection httpURLConnection ;
+    URL url_image;
+    OutputStream outputStream;
+    BufferedWriter bufferedWriter ;
+    int RC ;
+    BufferedReader bufferedReader ;
+    StringBuilder stringBuilder;
+    boolean check = true;
+    private int GALLERY = 1, CAMERA = 2;
+    String datetf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -475,10 +509,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
-        final String url = Api_url.URL_INSERT_CLOSING;
+        final String url = Api_url.URL_CHECK_STATUS;
         final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
         final Spinner spinner1 = (Spinner) dialogView.findViewById(R.id.spinner2);
         final TextView txt_akun_bnk    = (TextView) dialogView.findViewById(R.id.tv_akun_bank);
+
+        ShowSelectedImage = (ImageView)dialogView.findViewById(R.id.imageView);
+        ShowSelectedImage.setVisibility(View.GONE);
+
+        byteArrayOutputStream = new ByteArrayOutputStream();
+
+        GetImageFromGalleryButton = (Button)dialogView.findViewById(R.id.buttonSelect);
+
+        GetImageFromGalleryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPictureDialog();
+            }
+        });
+
+        ShowSelectedImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog_imageFull();
+            }
+        });
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -523,15 +578,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Toast.makeText(getApplicationContext(), "Tanggal pembayaran tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
                     if (String.valueOf(spinner.getSelectedItem()).equals("Cash")){
-                        request_postClosing("CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
                                 , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner.getSelectedItem()),
                                 txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
+
                     }else {
-                        request_postClosing("CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
                                 , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner1.getSelectedItem()),
                                 txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
-                    }
 
+                    }
                 }
 
             }
@@ -543,6 +599,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 showCalendar();
             }
         });
+
+        dialogs.show();
+    }
+
+    private void dialog_imageFull() {
+        dialogs = new AlertDialog.Builder(MainActivity.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.full_display, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
+
+        ImageView img_full = (ImageView) dialogView.findViewById(R.id.img_full);
+        img_full.setImageBitmap(FixBitmap);
 
         dialogs.show();
     }
@@ -883,7 +952,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ru.execute();
     }
 
-    private void request_postClosing(final String aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
+    private void request_postClosing(final String id, final String aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
                                      final String noHp, final String type, final String url, final String assign, final String status, final String typeTransfer,
                                      final String akunBank, final String nominal, final String dateTransfer) {
         class insert_call extends AsyncTask<Void, Void, String> {
@@ -910,7 +979,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
 
                 format = new SimpleDateFormat("dd MMMM yyyy");
-                String datetf = format.format(newDate);
+                datetf = format.format(newDate);
 
                 //creating request parameters
                 HashMap<String, String> params = new HashMap<>();
@@ -944,13 +1013,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
-                Log.d("result", result);
+                Log.d("result_closing", result);
                 dialog.dismiss();
 
                 try {
                     JSONObject obj = new JSONObject(result);
                     if (obj.getInt("status") == 0) {
-                        popup_success(obj.getString("message"));
+//                        update_status(id, nama, datetf);
+                        JSONObject jsonObject = obj.getJSONObject("user");
+                        UploadImageToServer(String.valueOf(jsonObject.getInt("id")), nama, datetf, id);
                     } else {
                         popup_failed(obj.getString("message"));
                     }
@@ -1075,6 +1146,120 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ru.execute();
     }
 
+    private void cek_status(final String id, final String aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
+                            final String noHp, final String type, final String url, final String assign, final String status, final String typeTransfer,
+                            final String akunBank, final String nominal, final String dateTransfer) {
+        class insert_call extends AsyncTask<Void, Void, String> {
+
+
+            @Override
+            protected String doInBackground(Void... voids) {
+                //creating request handler object
+                RequestHandler requestHandler = new RequestHandler();
+
+                HashMap<String, String> params = new HashMap<>();
+                params.put("id", id);
+                params.put("status", "");
+                //returing the response
+                return requestHandler.sendPostRequest(url, params);
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                //displaying the progress bar while user registers on the server
+                dialog.setMessage("please wait...");
+                dialog.show();
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                Log.d("result", result);
+
+                final String urls = Api_url.URL_INSERT_CLOSING;
+
+                dialog.dismiss();
+
+                try {
+                    JSONObject obj = new JSONObject(result);
+                    if (obj.getInt("status") == 0) {
+                        JSONObject jsonObject = obj.getJSONObject("user");
+                        String status_ = jsonObject.getString("status_closing");
+                        if(status_.equals("")) {
+                            if (typeTransfer.equals("Cash")){
+                                request_postClosing(id,"CLOSING", nama,email, alamat, jenis_kelamin
+                                        ,noHp, "3", urls, user.get(SessionManager.KEY_NAMA), "3", typeTransfer, "",
+                                        nominal, dateTransfer);
+                            }else {
+                                request_postClosing(id,"CLOSING", nama,email, alamat, jenis_kelamin
+                                        ,noHp, "3", urls, user.get(SessionManager.KEY_NAMA), "3", typeTransfer, akunBank,
+                                        nominal, dateTransfer);
+                            }
+                        }
+                    } else {
+                        popup_failed(obj.getString("message"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        insert_call ru = new insert_call();
+        ru.execute();
+    }
+
+    private void update_status(final String id, final String nama, final String tgl_tf) {
+        class insert_call extends AsyncTask<Void, Void, String> {
+            final String url = Api_url.URL_UPDATE_STATUS;
+
+            @SuppressLint("SimpleDateFormat")
+            @Override
+            protected String doInBackground(Void... voids) {
+                //creating request handler object
+                RequestHandler requestHandler = new RequestHandler();
+
+                HashMap<String, String> params = new HashMap<>();
+                params.put("id", id);
+                params.put("status", "1");
+
+                //returing the response
+                Log.d("jsonClose", params.toString());
+                return requestHandler.sendPostRequest(url, params);
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                //displaying the progress bar while user registers on the server
+                dialog.setMessage("please wait...");
+                dialog.show();
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                Log.d("result", result);
+                dialog.dismiss();
+
+                try {
+                    JSONObject obj = new JSONObject(result);
+                    if (obj.getInt("status") == 0) {
+                        popup_success(obj.getString("message"));
+                    } else {
+                        popup_failed(obj.getString("message"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        insert_call ru = new insert_call();
+        ru.execute();
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -1160,6 +1345,168 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         };
     }
 
+    private void showPictureDialog(){
+        android.support.v7.app.AlertDialog.Builder pictureDialog = new android.support.v7.app.AlertDialog.Builder(this);
+        pictureDialog.setTitle("Select Action");
+        String[] pictureDialogItems = {
+                "Photo Gallery",
+                "Camera" };
+        pictureDialog.setItems(pictureDialogItems,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                choosePhotoFromGallary();
+                                break;
+                            case 1:
+
+                                break;
+                        }
+                    }
+                });
+        pictureDialog.show();
+    }
+    public void choosePhotoFromGallary() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+        startActivityForResult(galleryIntent, GALLERY);
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == this.RESULT_CANCELED) {
+            return;
+        }
+        if (requestCode == GALLERY) {
+            if (data != null) {
+                Uri contentURI = data.getData();
+                try {
+                    FixBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
+                    // String path = saveImage(bitmap);
+                    //Toast.makeText(MainActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
+                    ShowSelectedImage.setVisibility(View.VISIBLE);
+                    ShowSelectedImage.setImageBitmap(FixBitmap);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }
+    }
+
+
+    public void UploadImageToServer(final String id, final String nama, final String tgl_tf, final String id_index){
+        final String url = Api_url.URL_UPLOAD_IMAGE;
+        FixBitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream);
+        byteArray = byteArrayOutputStream.toByteArray();
+        ConvertImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        class AsyncTaskUploadClass extends AsyncTask<Void,Void,String> {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                progressDialog = ProgressDialog.show(MainActivity.this,"Uploading","Please Wait",false,false);
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                progressDialog.dismiss();
+                if (result.equals("Please Try Again")){
+                    popup_failed(result);
+                }else {
+                    update_status(id_index, nama, datetf);
+                }
+            }
+
+            @Override
+            protected String doInBackground(Void... params) {
+
+
+                ImageProcessClass imageProcessClass = new ImageProcessClass();
+                HashMap<String,String> HashMapParams = new HashMap<String,String>();
+                HashMapParams.put(ImageTag, "Donatur_"+nama+"_"+tgl_tf);
+                HashMapParams.put(ImageName, ConvertImage);
+                HashMapParams.put("id", id);
+                Log.d("Params", HashMapParams.toString());
+                String FinalData = imageProcessClass.ImageHttpRequest(url, HashMapParams);
+                return FinalData;
+            }
+        }
+        AsyncTaskUploadClass AsyncTaskUploadClassOBJ = new AsyncTaskUploadClass();
+        AsyncTaskUploadClassOBJ.execute();
+    }
+
+    public class ImageProcessClass{
+
+        public String ImageHttpRequest(String requestURL,HashMap<String, String> PData) {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            try {
+                url_image = new URL(requestURL);
+                httpURLConnection = (HttpURLConnection) url_image.openConnection();
+                httpURLConnection.setReadTimeout(20000);
+                httpURLConnection.setConnectTimeout(20000);
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setDoInput(true);
+                httpURLConnection.setDoOutput(true);
+                outputStream = httpURLConnection.getOutputStream();
+                bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
+                bufferedWriter.write(bufferedWriterDataFN(PData));
+                bufferedWriter.flush();
+                bufferedWriter.close();
+                outputStream.close();
+                RC = httpURLConnection.getResponseCode();
+                if (RC == HttpsURLConnection.HTTP_OK) {
+                    bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                    stringBuilder = new StringBuilder();
+                    String RC2;
+                    while ((RC2 = bufferedReader.readLine()) != null){
+                        stringBuilder.append(RC2);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return stringBuilder.toString();
+        }
+
+        private String bufferedWriterDataFN(HashMap<String, String> HashMapParams) throws UnsupportedEncodingException {
+            stringBuilder = new StringBuilder();
+            for (Map.Entry<String, String> KEY : HashMapParams.entrySet()) {
+                if (check)
+                    check = false;
+                else
+                    stringBuilder.append("&");
+                stringBuilder.append(URLEncoder.encode(KEY.getKey(), "UTF-8"));
+                stringBuilder.append("=");
+                stringBuilder.append(URLEncoder.encode(KEY.getValue(), "UTF-8"));
+            }
+
+            return stringBuilder.toString();
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 5) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Now user should be able to use camera
+            }
+            else {
+
+                Toast.makeText(MainActivity.this, "Unable to use Camera..Please Allow us to use Camera", Toast.LENGTH_LONG).show();
+
+            }
+        }
+    }
     @Override
     public void onBackPressed() {
         popup_close();
