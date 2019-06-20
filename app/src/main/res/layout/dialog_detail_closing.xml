@@ -62,29 +62,6 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="5dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:text="Hasil Aktivitas : "
-                    android:textColor="@color/bpWhite" />
-
-                <TextView
-                    android:id="@+id/tv_hsl_aktivitas"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginBottom="5dp"
-                    android:text="Hasil Aktivitas"
-                    android:textColor="@color/bpWhite" />
-
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -250,6 +227,25 @@
                     android:text="Aktivitas"
                     android:textColor="@color/bpWhite" />
 
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ln_show_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:padding="3dp"
+                android:background="@color/bp_disabled_day"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Show Foto Bukti Transfer/Cash"
+                    android:textColor="@color/bpWhite" />
             </LinearLayout>
 
             <TextView

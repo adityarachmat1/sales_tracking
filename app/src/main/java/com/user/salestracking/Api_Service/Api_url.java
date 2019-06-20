@@ -1,9 +1,9 @@
 package com.user.salestracking.Api_Service;
 
 public class Api_url {
-    private static final String URL = "http://192.168.80.2/";
+    private static final String URL = "http://10.2.115.59/";
 
-    //User
+    // Db User
     public static final String URL_REGISTER = URL + "sales_tracking/user/Api.php?apicall=register";
     public static final String URL_LOGIN= URL + "sales_tracking/user/Api.php?apicall=login";
     public static final String URL_EDIT_DONATUR = URL + "sales_tracking/user/Api.php?apicall=edit_donatur";
@@ -12,7 +12,7 @@ public class Api_url {
     public static final String URL_CHECK_STATUS = URL + "sales_tracking/user/Api.php?apicall=check_status";
     public static final String URL_UPDATE_STATUS = URL + "sales_tracking/user/Api.php?apicall=update_status_donatur";
 
-    //Sales Tracking
+    //Db Sales Tracking
     public static final String URL_INSERT_CALL= URL + "sales_tracking/post/insertdata.php?api=call";
     public static final String URL_INSERT_VISIT= URL + "sales_tracking/post/insertdata.php?api=visit";
     public static final String URL_INSERT_CLOSING= URL + "sales_tracking/post/insertdata.php?api=closing";

@@ -1,20 +1,27 @@
 package com.user.salestracking;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -50,10 +57,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -62,6 +72,7 @@ import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -125,8 +136,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     BufferedReader bufferedReader ;
     StringBuilder stringBuilder;
     boolean check = true;
-    private int GALLERY = 1, CAMERA = 2;
+    private int GALLERY = 1, REQUEST_CAPTURE_IMAGE = 100;
     String datetf;
+    String imageFilePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,6 +251,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.list_call) {
+            startActivity(new Intent(MainActivity.this, List_Call.class));
+            drawer.closeDrawers();
+            finish();
+
+        } else if (id == R.id.list_visit) {
+            startActivity(new Intent(MainActivity.this, List_visit.class));
+            drawer.closeDrawers();
+            finish();
+        } else if (id == R.id.list_closing) {
+            startActivity(new Intent(MainActivity.this, List_closing.class));
+            drawer.closeDrawers();
+            finish();
+
+        } else if (id == R.id.nav_about_us) {
+            Toast.makeText(getApplicationContext(), "about_us", Toast.LENGTH_SHORT).show();
+
+        } else if (id == R.id.create_donatur) {
+            dialogCreate_donatur();
+
+        } else if (id == R.id.create_akun) {
+            dialogPilih_akun();
+
+        } else if (id == R.id.list_donatur) {
+            startActivity(new Intent(MainActivity.this, MainActivity.class));
+            drawer.closeDrawers();
+            finish();
+
+        } else if (id == R.id.logout) {
+            popup();
+            return true;
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.END);
+        return true;
+    }
+
+    ///////////////// ALERT DIALOG ///////////////////
+
     private void popup(){
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(this);
@@ -308,6 +366,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         alert.show();
     }
 
+    ///////////////// ALERT DIALOG /////////////////
+
     private void logout(){
         session.logoutUser();
         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
@@ -315,60 +375,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         finish();
     }
 
-    private void request() {
-        class RegisterUser extends AsyncTask<Void, Void, String> {
+    /////////////////////// DIALOG ///////////////////
 
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                RequestHandler requestHandler = new RequestHandler();
-
-                return requestHandler.getRequest(Api_url.GET_DATA_DONATUR);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                dialog.dismiss();
-                result(result);
-
-            }
-        }
-
-        RegisterUser ru = new RegisterUser();
-        ru.execute();
-    }
-
-    private void result(String result){
-        Log.d("result", result);
-        JSONObject jsonObject;
-        JSONArray jsonArray;
-            try {
-                jsonArray = new JSONArray(result);
-                for (int i = 0; i < jsonArray.length(); i++){
-                    jsonObject = jsonArray.getJSONObject(i);
-
-                    donatur_list.add(new DataDonatur(jsonObject.getString("id"),
-                            jsonObject.getString("nama"),
-                            jsonObject.getString("email"),
-                            jsonObject.getString("jenis_kelamin"),
-                            jsonObject.getString("alamat"),
-                            jsonObject.getString("nomor_hanphone"),
-                            jsonObject.getString("tgl_lahir")));
-                    DonaturlistAdapter adapter = new DonaturlistAdapter(this, R.layout.row_data_donatur, donatur_list);
-                    listView.setAdapter(adapter);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-    }
 
     private void dialogFormDetail(final int pos) {
         dialogs = new AlertDialog.Builder(MainActivity.this);
@@ -574,8 +582,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (txt_tgl_pembayaran.getText().toString().equals("")){
+                if (txt_nominal.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "Nominal tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                }else if (txt_tgl_pembayaran.getText().toString().equals("") || ShowSelectedImage.getVisibility() == View.GONE){
                     Toast.makeText(getApplicationContext(), "Tanggal pembayaran tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                }else if (ShowSelectedImage.getVisibility() == View.GONE){
+                    Toast.makeText(getApplicationContext(), "Foto Bukti transfer/Cash tidak boleh kosong ", Toast.LENGTH_SHORT).show();
                 }else {
                     if (String.valueOf(spinner.getSelectedItem()).equals("Cash")){
                         cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
@@ -886,6 +898,65 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         cdp.show((getSupportFragmentManager()),"Promise Date");
     }
 
+    ////////////////////// DIALOG ////////////////////////////
+
+    /////////////// REQUEST SERVICE ////////////////////////////
+
+    private void request() {
+        class RegisterUser extends AsyncTask<Void, Void, String> {
+
+
+            @Override
+            protected String doInBackground(Void... voids) {
+                RequestHandler requestHandler = new RequestHandler();
+
+                return requestHandler.getRequest(Api_url.GET_DATA_DONATUR);
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                dialog.setMessage("please wait...");
+                dialog.show();
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                dialog.dismiss();
+                result(result);
+
+            }
+        }
+
+        RegisterUser ru = new RegisterUser();
+        ru.execute();
+    }
+
+    private void result(String result){
+        Log.d("result", result);
+        JSONObject jsonObject;
+        JSONArray jsonArray;
+        try {
+            jsonArray = new JSONArray(result);
+            for (int i = 0; i < jsonArray.length(); i++){
+                jsonObject = jsonArray.getJSONObject(i);
+
+                donatur_list.add(new DataDonatur(jsonObject.getString("id"),
+                        jsonObject.getString("nama"),
+                        jsonObject.getString("email"),
+                        jsonObject.getString("jenis_kelamin"),
+                        jsonObject.getString("alamat"),
+                        jsonObject.getString("nomor_hanphone"),
+                        jsonObject.getString("tgl_lahir")));
+                DonaturlistAdapter adapter = new DonaturlistAdapter(this, R.layout.row_data_donatur, donatur_list);
+                listView.setAdapter(adapter);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void request_post(final String aktivitas, final String hasil_aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
                               final String noHp, final String catatan, final String type, final String url, final String assign, final String status) {
@@ -977,9 +1048,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-
                 format = new SimpleDateFormat("dd MMMM yyyy");
-                datetf = format.format(newDate);
+                String date = format.format(newDate);
+
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat formats = new SimpleDateFormat("dd-MM-yyyy");
+                Date newDates = null;
+                try {
+                    newDates = formats.parse(dateTransfer);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                formats = new SimpleDateFormat("dd-MMMM-yyyy");
+                datetf = formats.format(newDates);
 
                 //creating request parameters
                 HashMap<String, String> params = new HashMap<>();
@@ -996,7 +1076,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 params.put("type_transfer", typeTransfer);
                 params.put("akun_bank", akunBank);
                 params.put("nominal", nominal);
-                params.put("tanggal_transfer", datetf);
+                params.put("tanggal_transfer", date);
                 //returing the response
                 Log.d("jsonClose", params.toString());
                 return requestHandler.sendPostRequest(url, params);
@@ -1013,15 +1093,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
-                Log.d("result_closing", result);
                 dialog.dismiss();
 
                 try {
                     JSONObject obj = new JSONObject(result);
                     if (obj.getInt("status") == 0) {
-//                        update_status(id, nama, datetf);
-                        JSONObject jsonObject = obj.getJSONObject("user");
-                        UploadImageToServer(String.valueOf(jsonObject.getInt("id")), nama, datetf, id);
+                        UploadImageToServer(email, nama, datetf, id);
                     } else {
                         popup_failed(obj.getString("message"));
                     }
@@ -1176,9 +1253,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
                 Log.d("result", result);
-
                 final String urls = Api_url.URL_INSERT_CLOSING;
-
                 dialog.dismiss();
 
                 try {
@@ -1260,149 +1335,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ru.execute();
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.list_call) {
-            startActivity(new Intent(MainActivity.this, List_Call.class));
-            drawer.closeDrawers();
-            finish();
-
-        } else if (id == R.id.list_visit) {
-            startActivity(new Intent(MainActivity.this, List_visit.class));
-            drawer.closeDrawers();
-            finish();
-        } else if (id == R.id.list_closing) {
-            startActivity(new Intent(MainActivity.this, List_closing.class));
-            drawer.closeDrawers();
-            finish();
-
-        } else if (id == R.id.nav_about_us) {
-            Toast.makeText(getApplicationContext(), "about_us", Toast.LENGTH_SHORT).show();
-
-        } else if (id == R.id.create_donatur) {
-            dialogCreate_donatur();
-
-        } else if (id == R.id.create_akun) {
-            dialogPilih_akun();
-
-        } else if (id == R.id.list_donatur) {
-            startActivity(new Intent(MainActivity.this, MainActivity.class));
-            drawer.closeDrawers();
-            finish();
-
-        } else if (id == R.id.logout) {
-            popup();
-            return true;
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.END);
-        return true;
-    }
-
-    private TextWatcher onTextChangedListener() {
-        return new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                txt_nominal.removeTextChangedListener(this);
-
-                try {
-                    String originalString = s.toString();
-
-                    Long longval;
-                    if (originalString.contains(",")) {
-                        originalString = originalString.replaceAll(",", "");
-                    }
-                    longval = Long.parseLong(originalString);
-
-                    DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
-                    formatter.applyPattern("#,###,###,###");
-                    String formattedString = formatter.format(longval);
-
-                    //setting text after format to EditText
-                    txt_nominal.setText(formattedString);
-                    txt_nominal.setSelection(txt_nominal.getText().length());
-                } catch (NumberFormatException nfe) {
-                    nfe.printStackTrace();
-                }
-
-                txt_nominal.addTextChangedListener(this);
-            }
-        };
-    }
-
-    private void showPictureDialog(){
-        android.support.v7.app.AlertDialog.Builder pictureDialog = new android.support.v7.app.AlertDialog.Builder(this);
-        pictureDialog.setTitle("Select Action");
-        String[] pictureDialogItems = {
-                "Photo Gallery",
-                "Camera" };
-        pictureDialog.setItems(pictureDialogItems,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case 0:
-                                choosePhotoFromGallary();
-                                break;
-                            case 1:
-
-                                break;
-                        }
-                    }
-                });
-        pictureDialog.show();
-    }
-    public void choosePhotoFromGallary() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-        startActivityForResult(galleryIntent, GALLERY);
-    }
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == this.RESULT_CANCELED) {
-            return;
-        }
-        if (requestCode == GALLERY) {
-            if (data != null) {
-                Uri contentURI = data.getData();
-                try {
-                    FixBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
-                    // String path = saveImage(bitmap);
-                    //Toast.makeText(MainActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
-                    ShowSelectedImage.setVisibility(View.VISIBLE);
-                    ShowSelectedImage.setImageBitmap(FixBitmap);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-        }
-    }
-
-
-    public void UploadImageToServer(final String id, final String nama, final String tgl_tf, final String id_index){
+    public void UploadImageToServer(final String email, final String nama, final String tgl_tf, final String id_index){
         final String url = Api_url.URL_UPLOAD_IMAGE;
         FixBitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream);
         byteArray = byteArrayOutputStream.toByteArray();
@@ -1428,13 +1361,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             protected String doInBackground(Void... params) {
+                Date c = Calendar.getInstance().getTime();
+                System.out.println("Current time => " + c);
 
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+                String formattedDate = df.format(c);
 
                 ImageProcessClass imageProcessClass = new ImageProcessClass();
                 HashMap<String,String> HashMapParams = new HashMap<String,String>();
-                HashMapParams.put(ImageTag, "Donatur_"+nama+"_"+tgl_tf);
+                HashMapParams.put(ImageTag, "IMG("+nama+")_"+formattedDate);
                 HashMapParams.put(ImageName, ConvertImage);
-                HashMapParams.put("id", id);
+                HashMapParams.put("email", email);
                 Log.d("Params", HashMapParams.toString());
                 String FinalData = imageProcessClass.ImageHttpRequest(url, HashMapParams);
                 return FinalData;
@@ -1493,20 +1430,175 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return stringBuilder.toString();
         }
     }
+
+    //////////////// REQUEST SERVICE ////////////////////////
+
+
+    /////////////////// CAMERA //////////////////////
+
+    private void showPictureDialog(){
+        android.support.v7.app.AlertDialog.Builder pictureDialog = new android.support.v7.app.AlertDialog.Builder(this);
+        pictureDialog.setTitle("Select Action");
+        String[] pictureDialogItems = {
+                "Photo Gallery",
+                "Camera" };
+        pictureDialog.setItems(pictureDialogItems,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                choosePhotoFromGallary();
+                                break;
+                            case 1:
+                                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                                    ActivityCompat.requestPermissions(MainActivity.this, new String[] { Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
+                                }else {
+                                    openCameraIntent();
+                                }
+                                break;
+                        }
+                    }
+                });
+        pictureDialog.show();
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 5) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Now user should be able to use camera
-            }
-            else {
-
-                Toast.makeText(MainActivity.this, "Unable to use Camera..Please Allow us to use Camera", Toast.LENGTH_LONG).show();
-
+        if (requestCode == 0) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                openCameraIntent();
             }
         }
     }
+
+    private void openCameraIntent() {
+        Intent pictureIntent = new Intent(
+                MediaStore.ACTION_IMAGE_CAPTURE);
+        if(pictureIntent.resolveActivity(getPackageManager()) != null){
+            //Create a file to store the image
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+            }
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,"com.user.salestracking.provider", photoFile);
+                pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                        photoURI);
+                startActivityForResult(pictureIntent,
+                        REQUEST_CAPTURE_IMAGE);
+            }
+        }
+    }
+
+    public void choosePhotoFromGallary() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+        startActivityForResult(galleryIntent, GALLERY);
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_CANCELED) {
+            return;
+        }
+
+        if (requestCode == REQUEST_CAPTURE_IMAGE &&
+                resultCode == RESULT_OK) {
+            File imgFile = new  File(imageFilePath);
+            if(imgFile.exists()){
+                FixBitmap = BitmapFactory.decodeFile(imageFilePath);
+                ShowSelectedImage.setVisibility(View.VISIBLE);
+                ShowSelectedImage.setImageBitmap(FixBitmap);
+            }
+
+        }
+        if (requestCode == GALLERY) {
+            if (data != null) {
+                Uri contentURI = data.getData();
+                try {
+                    FixBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
+                    // String path = saveImage(bitmap);
+                    //Toast.makeText(MainActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
+                    ShowSelectedImage.setVisibility(View.VISIBLE);
+                    ShowSelectedImage.setImageBitmap(FixBitmap);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp =
+                new SimpleDateFormat("yyyyMMdd_HHmmss",
+                        Locale.getDefault()).format(new Date());
+        String imageFileName = "IMG_" + timeStamp + "_";
+        File storageDir =
+                getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        imageFilePath = image.getAbsolutePath();
+        return image;
+    }
+
+    //////////////////// CAMERA ////////////////////
+
+    private TextWatcher onTextChangedListener() {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                txt_nominal.removeTextChangedListener(this);
+
+                try {
+                    String originalString = s.toString();
+
+                    Long longval;
+                    if (originalString.contains(",")) {
+                        originalString = originalString.replaceAll(",", "");
+                    }
+                    longval = Long.parseLong(originalString);
+
+                    DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+                    formatter.applyPattern("#,###,###,###");
+                    String formattedString = formatter.format(longval);
+
+                    //setting text after format to EditText
+                    txt_nominal.setText(formattedString);
+                    txt_nominal.setSelection(txt_nominal.getText().length());
+                } catch (NumberFormatException nfe) {
+                    nfe.printStackTrace();
+                }
+
+                txt_nominal.addTextChangedListener(this);
+            }
+        };
+    }
+
     @Override
     public void onBackPressed() {
         popup_close();
