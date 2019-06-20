@@ -3,140 +3,150 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:padding="16dp"
     android:layout_height="match_parent">
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:textColor="@color/colorPrimary"
-        android:text="Aktivitas" />
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-    <EditText
-        android:text="CLOSING"
-        android:layout_marginTop="5dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:textColor="@android:color/black"
-        android:background="@android:drawable/editbox_background_normal"/>
-
-    <TextView
-        android:id="@+id/textView60"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:textColor="@color/colorPrimary"
-        android:text="Tipe Transfer" />
-
-    <Spinner
-        android:id="@+id/spinner1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:entries="@array/pay_arrays"
-        android:prompt="@string/prompt_pay" />
-
-    <TextView
-        android:id="@+id/tv_akun_bank"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:textColor="@color/colorPrimary"
-        android:text="Akun BANK" />
-
-    <Spinner
-        android:id="@+id/spinner2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:entries="@array/bank_arrays"
-        android:prompt="@string/prompt_bank" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:textColor="@color/colorPrimary"
-        android:text="Nama" />
-
-    <EditText
-        android:id="@+id/txt_nama"
-        android:hint="Nama"
-        android:layout_marginTop="5dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:textColor="@android:color/black"
-        android:background="@android:drawable/editbox_background_normal"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:textColor="@color/colorPrimary"
-        android:text="Nominal" />
-
-    <EditText
-        android:id="@+id/txt_nominal"
-        android:hint="Rp."
-        android:inputType="number"
-        android:layout_marginTop="5dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:background="@android:drawable/editbox_background_normal"/>
-
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:textColor="@color/colorPrimary"
-        android:text="Tanggal Transfer" />
-
-    <TextView
-        android:id="@+id/txt_tgl_pembayaran"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:textSize="18dp"
-        android:background="@android:drawable/editbox_background_normal"
-        android:hint="Tanggal"
-        android:textColor="@android:color/black" />
-
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Capture Transfer / cash"
-        android:textColor="@color/bpWhite"
-        android:id="@+id/buttonSelect"
-        android:background="@color/colorPrimary"
-        android:layout_margin="10dp"/>
-
-    <ImageView
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:id="@+id/imageView"
-        android:layout_gravity="center"
-        android:visibility="visible"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btn_save"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@color/colorPrimary"
-            android:textColor="@android:color/white"
-            android:text="SAVE" />
-    </LinearLayout>
+            android:orientation="vertical" >
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="Aktivitas"
+                android:textColor="@color/colorPrimary" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@android:drawable/editbox_background_normal"
+                android:enabled="false"
+                android:text="CLOSING"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/textView60"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Tipe Transfer"
+                android:textColor="@color/colorPrimary" />
+
+            <Spinner
+                android:id="@+id/spinner1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:entries="@array/pay_arrays"
+                android:prompt="@string/prompt_pay" />
+
+            <TextView
+                android:id="@+id/tv_akun_bank"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/colorPrimary"
+                android:text="Akun BANK" />
+
+            <Spinner
+                android:id="@+id/spinner2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:entries="@array/bank_arrays"
+                android:prompt="@string/prompt_bank" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:textColor="@color/colorPrimary"
+                android:text="Nama" />
+
+            <EditText
+                android:id="@+id/txt_nama"
+                android:hint="Nama"
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:textColor="@android:color/black"
+                android:background="@android:drawable/editbox_background_normal"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:textColor="@color/colorPrimary"
+                android:text="Nominal" />
+
+            <EditText
+                android:id="@+id/txt_nominal"
+                android:hint="Rp."
+                android:inputType="number"
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:background="@android:drawable/editbox_background_normal"/>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:textColor="@color/colorPrimary"
+                android:text="Tanggal Transfer" />
+
+            <TextView
+                android:id="@+id/txt_tgl_pembayaran"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:textSize="18dp"
+                android:background="@android:drawable/editbox_background_normal"
+                android:hint="Tanggal"
+                android:textColor="@android:color/black" />
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Foto Bukti Transfer / cash"
+                android:textColor="@color/bpWhite"
+                android:id="@+id/buttonSelect"
+                android:background="@color/colorPrimary"
+                android:layout_margin="10dp"/>
+
+            <ImageView
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:id="@+id/imageView"
+                android:layout_gravity="center"
+                android:visibility="gone"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/colorPrimary"
+                    android:textColor="@android:color/white"
+                    android:text="SIMPAN" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

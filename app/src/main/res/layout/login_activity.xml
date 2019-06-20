@@ -37,7 +37,7 @@
                 android:id="@+id/userid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Username"
+                android:hint="Email"
                 android:textSize="16dp"
                 android:textColor="#010101" />
         </android.support.design.widget.TextInputLayout>

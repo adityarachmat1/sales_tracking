@@ -15,8 +15,9 @@ public class DataListClosing {
     private String akun_bank;
     private String nominal;
     private String tanggal_transfer;
+    private String url_image;
 
-    public DataListClosing(String id, String aktivitas, String nama, String email, String alamat, String jenis_kelamin, String no_hp, String type_aktivitas, String date_record, String assign_by, String type_transfer, String akun_bank, String nominal, String tanggal_transfer) {
+    public DataListClosing(String id, String aktivitas, String nama, String email, String alamat, String jenis_kelamin, String no_hp, String type_aktivitas, String date_record, String assign_by, String type_transfer, String akun_bank, String nominal, String tanggal_transfer, String url_image) {
         this.id = id;
         this.aktivitas = aktivitas;
         this.nama = nama;
@@ -31,6 +32,7 @@ public class DataListClosing {
         this.akun_bank = akun_bank;
         this.nominal = nominal;
         this.tanggal_transfer = tanggal_transfer;
+        this.url_image = url_image;
     }
 
     public String getId() {
@@ -143,5 +145,13 @@ public class DataListClosing {
 
     public void setTanggal_transfer(String tanggal_transfer) {
         this.tanggal_transfer = tanggal_transfer;
+    }
+
+    public String getUrl_image() {
+        return url_image;
+    }
+
+    public void setUrl_image(String url_image) {
+        this.url_image = url_image;
     }
 }

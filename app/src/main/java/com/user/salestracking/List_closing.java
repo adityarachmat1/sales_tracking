@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -34,6 +35,7 @@ import android.widget.Toast;
 
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
+import com.squareup.picasso.Picasso;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
 
@@ -65,6 +67,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
     TextView txt_tgl_pembayaran, tgl_lahir;
     Button btn_call, btn_visit, btn_closing, btn_save;
     View dialogView;
+    Bitmap FixBitmap;
 
     private NavigationView navigationView;
     private DrawerLayout drawer;
@@ -277,7 +280,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
                             jsonObject.getString("email"),jsonObject.getString("alamat"),jsonObject.getString("jenis_kelamin"),jsonObject.getString("no_hp"),
                             jsonObject.getString("type_aktivitas"),jsonObject.getString("date_record"), jsonObject.getString("assign_by"),
                             jsonObject.getString("type_transfer"),jsonObject.getString("akun_bank"),jsonObject.getString("nominal"),
-                            jsonObject.getString("tanggal_transfer")));
+                            jsonObject.getString("tanggal_transfer"),jsonObject.getString("image_path")));
                     ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
                     listView.setAdapter(adapter);
                 }else {
@@ -286,7 +289,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
                                 jsonObject.getString("email"),jsonObject.getString("alamat"),jsonObject.getString("jenis_kelamin"),jsonObject.getString("no_hp"),
                                 jsonObject.getString("type_aktivitas"),jsonObject.getString("date_record"), jsonObject.getString("assign_by"),
                                 jsonObject.getString("type_transfer"),jsonObject.getString("akun_bank"),jsonObject.getString("nominal"),
-                                jsonObject.getString("tanggal_transfer")));
+                                jsonObject.getString("tanggal_transfer"),jsonObject.getString("image_path")));
                         ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
                         listView.setAdapter(adapter);
                     }
@@ -297,6 +300,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void dialogFormDetail(final int pos) {
         dialogs = new AlertDialog.Builder(List_closing.this);
         inflater = getLayoutInflater();
@@ -304,6 +308,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
+        LinearLayout ln_show_image = (LinearLayout) dialogView.findViewById(R.id.ln_show_image);
         txt_nama    = (TextView) dialogView.findViewById(R.id.tv_name);
         txt_email  = (TextView) dialogView.findViewById(R.id.tv_email);
         txt_alamat  = (TextView) dialogView.findViewById(R.id.tv_alamat);
@@ -312,7 +317,6 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         TextView tv_akun_bank = (TextView) dialogView.findViewById(R.id.tv_akun_bank);
         TextView tv_nominal = (TextView) dialogView.findViewById(R.id.tv_nominal);
         TextView tv_aktivitas = (TextView) dialogView.findViewById(R.id.tv_aktivitas);
-        TextView tv_hsl_aktivitas = (TextView) dialogView.findViewById(R.id.tv_hsl_aktivitas);
         TextView tv_date = (TextView) dialogView.findViewById(R.id.tv_date);
         TextView tv_registeredBy = (TextView) dialogView.findViewById(R.id.tv_registeredBy);
         LinearLayout ln_akun_bank = (LinearLayout) dialogView.findViewById(R.id.ln_akun_bank);
@@ -322,12 +326,17 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         txt_alamat.setText(dataListClosing.get(pos).getAlamat());
         tv_noHp.setText(dataListClosing.get(pos).getNo_hp());
         tv_type_transfer.setText(dataListClosing.get(pos).getType_transfer());
-        tv_nominal.setText(dataListClosing.get(pos).getNominal());
-//        tv_noted.setText(dataListClosing.get(pos).getCatatan());
+        tv_nominal.setText("Rp. "+dataListClosing.get(pos).getNominal());
         tv_aktivitas.setText(dataListClosing.get(pos).getAktivitas());
-//        tv_hsl_aktivitas.setText(dataListClosing.get(pos).getHasil_aktivitas());
         tv_date.setText(dataListClosing.get(pos).getDate_record());
         tv_registeredBy.setText(dataListClosing.get(pos).getAssign_by());
+
+        ln_show_image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog_imageFull(pos);
+            }
+        });
 
         if (dataListClosing.get(pos).getAkun_bank().equals("")){
             ln_akun_bank.setVisibility(View.GONE);
@@ -335,6 +344,19 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
             ln_akun_bank.setVisibility(View.VISIBLE);
             tv_akun_bank.setText(dataListClosing.get(pos).getAkun_bank());
         }
+
+        dialogs.show();
+    }
+
+    private void dialog_imageFull(int pos) {
+        dialogs = new AlertDialog.Builder(List_closing.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.full_display, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
+
+        ImageView img_full = (ImageView) dialogView.findViewById(R.id.img_full);
+        Picasso.with(getApplicationContext()).load(dataListClosing.get(pos).getUrl_image()).into(img_full);
 
         dialogs.show();
     }
