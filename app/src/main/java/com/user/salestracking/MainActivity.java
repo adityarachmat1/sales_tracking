@@ -1372,6 +1372,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 HashMapParams.put(ImageTag, "IMG("+nama+")_"+formattedDate);
                 HashMapParams.put(ImageName, ConvertImage);
                 HashMapParams.put("email", email);
+                HashMapParams.put("server_url", Api_url.URL_SERVER+"IMG("+nama+")_"+formattedDate+".jpg");
                 Log.d("Params", HashMapParams.toString());
                 String FinalData = imageProcessClass.ImageHttpRequest(url, HashMapParams);
                 return FinalData;
