@@ -275,15 +275,15 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
             for (int i = 0; i < jsonArray.length(); i++){
                 jsonObject = jsonArray.getJSONObject(i);
 
-                if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
-                    dataListClosing.add(new DataListClosing(jsonObject.getString("id"), jsonObject.getString("aktivitas"),jsonObject.getString("nama"),
-                            jsonObject.getString("email"),jsonObject.getString("alamat"),jsonObject.getString("jenis_kelamin"),jsonObject.getString("no_hp"),
-                            jsonObject.getString("type_aktivitas"),jsonObject.getString("date_record"), jsonObject.getString("assign_by"),
-                            jsonObject.getString("type_transfer"),jsonObject.getString("akun_bank"),jsonObject.getString("nominal"),
-                            jsonObject.getString("tanggal_transfer"),jsonObject.getString("image_path")));
-                    ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
-                    listView.setAdapter(adapter);
-                }else {
+//                if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
+//                    dataListClosing.add(new DataListClosing(jsonObject.getString("id"), jsonObject.getString("aktivitas"),jsonObject.getString("nama"),
+//                            jsonObject.getString("email"),jsonObject.getString("alamat"),jsonObject.getString("jenis_kelamin"),jsonObject.getString("no_hp"),
+//                            jsonObject.getString("type_aktivitas"),jsonObject.getString("date_record"), jsonObject.getString("assign_by"),
+//                            jsonObject.getString("type_transfer"),jsonObject.getString("akun_bank"),jsonObject.getString("nominal"),
+//                            jsonObject.getString("tanggal_transfer"),jsonObject.getString("image_path")));
+//                    ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
+//                    listView.setAdapter(adapter);
+//                }else {
                     if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
                         dataListClosing.add(new DataListClosing(jsonObject.getString("id"), jsonObject.getString("aktivitas"),jsonObject.getString("nama"),
                                 jsonObject.getString("email"),jsonObject.getString("alamat"),jsonObject.getString("jenis_kelamin"),jsonObject.getString("no_hp"),
@@ -292,7 +292,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
                                 jsonObject.getString("tanggal_transfer"),jsonObject.getString("image_path")));
                         ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
                         listView.setAdapter(adapter);
-                    }
+//                    }
                 }
             }
         } catch (JSONException e) {
@@ -633,7 +633,12 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.list_call) {
+        if (id == R.id.dashboard) {
+            startActivity(new Intent(List_closing.this, Dashboard_activity.class));
+            drawer.closeDrawers();
+            finish();
+
+        }else if (id == R.id.list_call) {
             startActivity(new Intent(List_closing.this, List_Call.class));
             drawer.closeDrawers();
             finish();

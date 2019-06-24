@@ -272,22 +272,22 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             for (int i = 0; i < jsonArray.length(); i++){
                 jsonObject = jsonArray.getJSONObject(i);
 
-                if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
-                    dataListVisits.add(new DataListVisit(
-                            jsonObject.getString("nama"),
-                            jsonObject.getString("email"),
-                            jsonObject.getString("jenis_kelamin"),
-                            jsonObject.getString("alamat"),
-                            jsonObject.getString("no_hp"),
-                            jsonObject.getString("aktivitas"),
-                            jsonObject.getString("hasil_aktivitas"),
-                            jsonObject.getString("catatan"),
-                            jsonObject.getString("type_aktivitas"),
-                            jsonObject.getString("date_record"),
-                            jsonObject.getString("assign_by")));
-                    VisitListAdapter adapter = new VisitListAdapter(this, R.layout.row_data_visit, dataListVisits);
-                    listView.setAdapter(adapter);
-                }else {
+//                if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
+//                    dataListVisits.add(new DataListVisit(
+//                            jsonObject.getString("nama"),
+//                            jsonObject.getString("email"),
+//                            jsonObject.getString("jenis_kelamin"),
+//                            jsonObject.getString("alamat"),
+//                            jsonObject.getString("no_hp"),
+//                            jsonObject.getString("aktivitas"),
+//                            jsonObject.getString("hasil_aktivitas"),
+//                            jsonObject.getString("catatan"),
+//                            jsonObject.getString("type_aktivitas"),
+//                            jsonObject.getString("date_record"),
+//                            jsonObject.getString("assign_by")));
+//                    VisitListAdapter adapter = new VisitListAdapter(this, R.layout.row_data_visit, dataListVisits);
+//                    listView.setAdapter(adapter);
+//                }else {
                     if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
                         dataListVisits.add(new DataListVisit(
                                 jsonObject.getString("nama"),
@@ -303,7 +303,7 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
                                 jsonObject.getString("assign_by")));
                         VisitListAdapter adapter = new VisitListAdapter(this, R.layout.row_data_visit, dataListVisits);
                         listView.setAdapter(adapter);
-                    }
+//                    }
                 }
             }
         } catch (JSONException e) {
@@ -613,7 +613,12 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.list_call) {
+        if (id == R.id.dashboard) {
+            startActivity(new Intent(List_visit.this, Dashboard_activity.class));
+            drawer.closeDrawers();
+            finish();
+
+        }else if (id == R.id.list_call) {
             startActivity(new Intent(List_visit.this, List_Call.class));
             drawer.closeDrawers();
             finish();

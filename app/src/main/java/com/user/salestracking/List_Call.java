@@ -272,22 +272,22 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
             for (int i = 0; i < jsonArray.length(); i++){
                 jsonObject = jsonArray.getJSONObject(i);
 
-                if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
-                    dataListCall.add(new DataListCall(
-                            jsonObject.getString("nama"),
-                            jsonObject.getString("email"),
-                            jsonObject.getString("jenis_kelamin"),
-                            jsonObject.getString("alamat"),
-                            jsonObject.getString("no_hp"),
-                            jsonObject.getString("aktivitas"),
-                            jsonObject.getString("hasil_aktivitas"),
-                            jsonObject.getString("catatan"),
-                            jsonObject.getString("type_aktivitas"),
-                            jsonObject.getString("date_record"),
-                            jsonObject.getString("assign_by")));
-                    CallListAdapter adapter = new CallListAdapter(this, R.layout.row_data_call, dataListCall);
-                    listView.setAdapter(adapter);
-                }else {
+//                if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
+//                    dataListCall.add(new DataListCall(
+//                            jsonObject.getString("nama"),
+//                            jsonObject.getString("email"),
+//                            jsonObject.getString("jenis_kelamin"),
+//                            jsonObject.getString("alamat"),
+//                            jsonObject.getString("no_hp"),
+//                            jsonObject.getString("aktivitas"),
+//                            jsonObject.getString("hasil_aktivitas"),
+//                            jsonObject.getString("catatan"),
+//                            jsonObject.getString("type_aktivitas"),
+//                            jsonObject.getString("date_record"),
+//                            jsonObject.getString("assign_by")));
+//                    CallListAdapter adapter = new CallListAdapter(this, R.layout.row_data_call, dataListCall);
+//                    listView.setAdapter(adapter);
+//                }else {
                     if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
                         dataListCall.add(new DataListCall(
                                 jsonObject.getString("nama"),
@@ -303,7 +303,7 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
                                 jsonObject.getString("assign_by")));
                         CallListAdapter adapter = new CallListAdapter(this, R.layout.row_data_call, dataListCall);
                         listView.setAdapter(adapter);
-                    }
+//                    }
                 }
             }
         } catch (JSONException e) {
@@ -613,7 +613,12 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.list_call) {
+        if (id == R.id.dashboard) {
+            startActivity(new Intent(List_Call.this, Dashboard_activity.class));
+            drawer.closeDrawers();
+            finish();
+
+        }else if (id == R.id.list_call) {
             startActivity(new Intent(List_Call.this, List_Call.class));
             drawer.closeDrawers();
             finish();

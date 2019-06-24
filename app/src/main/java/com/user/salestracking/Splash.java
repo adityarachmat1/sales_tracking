@@ -41,7 +41,7 @@ public class Splash extends AppCompatActivity{
                     //closing the timer
                     timer.cancel();
                     if (session.isLoggedIn()){
-                        Intent intent =new Intent(Splash.this,MainActivity.class);
+                        Intent intent =new Intent(Splash.this,Dashboard_activity.class);
                         startActivity(intent);
                         finish();
                     }else {

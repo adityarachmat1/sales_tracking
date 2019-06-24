@@ -257,7 +257,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.list_call) {
+        if (id == R.id.dashboard) {
+            startActivity(new Intent(MainActivity.this, Dashboard_activity.class));
+            drawer.closeDrawers();
+            finish();
+
+        }else if (id == R.id.list_call) {
             startActivity(new Intent(MainActivity.this, List_Call.class));
             drawer.closeDrawers();
             finish();
@@ -343,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                        Intent intent = new Intent(MainActivity.this, Dashboard_activity.class);
                         startActivity(intent);
                         finish();
                     }

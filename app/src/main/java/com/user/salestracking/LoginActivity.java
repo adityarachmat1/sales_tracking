@@ -98,7 +98,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         session.createLoginSession(String.valueOf(id), email,cabang, jenis_kelamin, nama, type_account, alamat, tgl_lahir, nomor_hanphone);
 
-                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
                         startActivity(intent);
                         finish();
 
