@@ -1,7 +1,7 @@
 package com.user.salestracking.Api_Service;
 
 public class Api_url {
-    private static final String URL = "http://10.2.115.59/";
+    private static final String URL = "http://192.168.80.2/";
 
     // Db User
     public static final String URL_REGISTER = URL + "sales_tracking/user/Api.php?apicall=register";
@@ -22,4 +22,6 @@ public class Api_url {
     public static final String GET_LIST_CLOSING= URL + "sales_tracking/post/listClosing.php";
 
     public static final String URL_UPLOAD_IMAGE= URL + "sales_tracking/upload_image/upload-image-to-server.php";
+
+    public static final String URL_SERVER= URL + "sales_tracking/upload_image/upload/";
 }
