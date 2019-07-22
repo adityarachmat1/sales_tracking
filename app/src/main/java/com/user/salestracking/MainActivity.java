@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -139,12 +140,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private int GALLERY = 1, REQUEST_CAPTURE_IMAGE = 100;
     String datetf;
     String imageFilePath;
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("Sales Tracking");
+        mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -291,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             finish();
 
         } else if (id == R.id.logout) {
+            mediaPlayer.start();
             popup();
             return true;
         }
@@ -309,11 +313,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         logout();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         dialog.cancel();
                     }
                 });
@@ -329,11 +335,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         finish();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         dialog.cancel();
                     }
                 });
@@ -1607,6 +1615,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
+        mediaPlayer.start();
         popup_close();
     }
 }

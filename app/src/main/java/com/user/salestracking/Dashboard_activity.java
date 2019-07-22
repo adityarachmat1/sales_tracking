@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -96,12 +97,14 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
 
     private boolean shouldLoadHomeFragOnBackPress = true;
     private Handler mHandler;
+    private MediaPlayer mediaPlayer;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dashboard_main);
+        mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
         call_aray.clear();
         visit_aray.clear();
         close_aray.clear();
@@ -271,6 +274,7 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
             finish();
 
         } else if (id == R.id.logout) {
+            mediaPlayer.start();
             popup();
             return true;
         }
@@ -289,11 +293,13 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         logout();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         dialog.cancel();
                     }
                 });
@@ -309,11 +315,13 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         finish();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         dialog.cancel();
                     }
                 });
@@ -823,6 +831,7 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
 
     @Override
     public void onBackPressed() {
+        mediaPlayer.start();
         popup_close();
     }
 }

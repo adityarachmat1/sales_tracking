@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -86,11 +87,13 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
             "Transfer",
             "Cash"
     };
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
         setTitle("Sales Tracking");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -196,11 +199,13 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         logout();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         dialog.cancel();
                     }
                 });
@@ -216,11 +221,13 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         finish();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mediaPlayer.stop();
                         dialog.cancel();
                     }
                 });
@@ -669,6 +676,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
             finish();
 
         } else if (id == R.id.logout) {
+            mediaPlayer.start();
             popup();
             return true;
         }
@@ -680,6 +688,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
+        mediaPlayer.start();
         popup_close();
     }
 }
