@@ -318,6 +318,16 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         }
     }
 
+    private void dialogAboutUs() {
+        dialogs = new AlertDialog.Builder(List_visit.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.dialog_about_us, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
+
+        dialogs.show();
+    }
+
     private void dialogFormDetail(final int pos) {
         dialogs = new AlertDialog.Builder(List_visit.this);
         inflater = getLayoutInflater();
@@ -641,7 +651,7 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             finish();
 
         } else if (id == R.id.nav_about_us) {
-            Toast.makeText(getApplicationContext(), "about_us", Toast.LENGTH_SHORT).show();
+            dialogAboutUs();
 
         } else if (id == R.id.create_donatur) {
             dialogCreate_donatur();

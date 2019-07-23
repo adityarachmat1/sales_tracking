@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             finish();
 
         } else if (id == R.id.nav_about_us) {
-            Toast.makeText(getApplicationContext(), "about_us", Toast.LENGTH_SHORT).show();
+            dialogAboutUs();
 
         } else if (id == R.id.create_donatur) {
             dialogCreate_donatur();
@@ -389,6 +389,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     /////////////////////// DIALOG ///////////////////
+    private void dialogAboutUs() {
+        dialogs = new AlertDialog.Builder(MainActivity.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.dialog_about_us, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
+
+        dialogs.show();
+    }
+
 
 
     private void dialogFormDetail(final int pos) {

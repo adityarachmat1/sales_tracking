@@ -260,7 +260,7 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
             finish();
 
         } else if (id == R.id.nav_about_us) {
-            Toast.makeText(getApplicationContext(), "about_us", Toast.LENGTH_SHORT).show();
+            dialogAboutUs();
 
         } else if (id == R.id.create_donatur) {
             dialogCreate_donatur();
@@ -436,6 +436,16 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
                 dialogCreate_akun("2");
             }
         });
+
+        dialogs.show();
+    }
+
+    private void dialogAboutUs() {
+        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.dialog_about_us, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
 
         dialogs.show();
     }
