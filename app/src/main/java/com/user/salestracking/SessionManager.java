@@ -46,7 +46,7 @@ public class SessionManager {
     /**
      * Create login session
      * */
-    public void createLoginSession(String id, String email, String cabang, String jenis_kelamin, String nama, String type_account, String alamat, String tgl_lahir, String nomor_handphone){
+    public void createLoginSession(String id, String email, String nama, String type_account){
         // Storing login value as TRUE
         editor.putBoolean(IS_LOGIN, true);
 
@@ -55,13 +55,8 @@ public class SessionManager {
 
         // Storing email in pref
         editor.putString(KEY_EMAIL, email);
-        editor.putString(KEY_CABANG, cabang);
-        editor.putString(KEY_ALAMAT, alamat);
-        editor.putString(KEY_JENIS_KELAMIN, jenis_kelamin);
         editor.putString(KEY_TYPE_ACCOUNT, type_account);
         editor.putString(KEY_NAMA, nama);
-        editor.putString(KEY_NO_HANDPHONE, nomor_handphone);
-        editor.putString(KEY_TGL_LAHIR, tgl_lahir);
 
         // commit changes
         editor.commit();

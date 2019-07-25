@@ -44,7 +44,12 @@ public class LoginActivity extends AppCompatActivity {
                 }else if (et_password.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "Password Kosong", Toast.LENGTH_SHORT).show();
                 }else {
-                    request();
+//                    request();
+                    session.createLoginSession(String.valueOf(1), et_email.getText().toString(), "admin", "1");
+
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
 
             }
@@ -98,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
                         String tgl_lahir = userJson.getString("tgl_lahir");
                         String nomor_hanphone = userJson.getString("nomor_hanphone");
 
-                        session.createLoginSession(String.valueOf(id), email,cabang, jenis_kelamin, nama, type_account, alamat, tgl_lahir, nomor_hanphone);
+//                        session.createLoginSession(String.valueOf(id), email,cabang, jenis_kelamin, nama, type_account, alamat, tgl_lahir, nomor_hanphone);
 
                         Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
                         startActivity(intent);

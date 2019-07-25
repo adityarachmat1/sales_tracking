@@ -53,6 +53,7 @@ import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialo
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.db.DatabaseHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -98,12 +99,17 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
     private boolean shouldLoadHomeFragOnBackPress = true;
     private Handler mHandler;
     private MediaPlayer mediaPlayer;
+    private DatabaseHelper db;
+    private DonaturlistAdapter adapter;
+    private List<DataDonatur> donaturList = new ArrayList<>();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dashboard_main);
+
+        db = new DatabaseHelper(this);
         mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
         call_aray.clear();
         visit_aray.clear();
@@ -368,48 +374,48 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         finish();
     }
 
-    private void dialogCreate_donatur() {
-        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
-        inflater = getLayoutInflater();
-        dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
-        dialogs.setView(dialogView);
-        dialogs.setCancelable(true);
-
-        final String url = Api_url.URL_CREATE_DONATUR;
-
-        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
-        txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
-        final EditText txt_alamat = (EditText) dialogView.findViewById(R.id.txt_alamat);
-        final EditText txt_email = (EditText) dialogView.findViewById(R.id.txt_email);
-        tgl_lahir = (TextView) dialogView.findViewById(R.id.txt_tgl_lahir);
-        txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
-        TextView txt_title = (TextView)dialogView.findViewById(R.id.txt_title);
-        txt_title.setText("CREATE DONATUR");
-
-        tgl_lahir.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                showCalendar_edit();
-            }
-        });
-
-        btn_save = (Button) dialogView.findViewById(R.id.btn_save);
-        btn_save.setText("CREATE");
-        btn_save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
-                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }else {
-                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
-                }
-
-            }
-        });
-
-        dialogs.show();
-    }
+//    private void dialogCreate_donatur() {
+//        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
+//        inflater = getLayoutInflater();
+//        dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
+//        dialogs.setView(dialogView);
+//        dialogs.setCancelable(true);
+//
+//        final String url = Api_url.URL_CREATE_DONATUR;
+//
+//        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
+//        txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
+//        final EditText txt_alamat = (EditText) dialogView.findViewById(R.id.txt_alamat);
+//        final EditText txt_email = (EditText) dialogView.findViewById(R.id.txt_email);
+//        tgl_lahir = (TextView) dialogView.findViewById(R.id.txt_tgl_lahir);
+//        txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
+//        TextView txt_title = (TextView)dialogView.findViewById(R.id.txt_title);
+//        txt_title.setText("CREATE DONATUR");
+//
+//        tgl_lahir.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(final View v) {
+//                showCalendar_edit();
+//            }
+//        });
+//
+//        btn_save = (Button) dialogView.findViewById(R.id.btn_save);
+//        btn_save.setText("CREATE");
+//        btn_save.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(final View v) {
+//                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+//                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
+//                }else {
+//                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
+//                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
+//                }
+//
+//            }
+//        });
+//
+//        dialogs.show();
+//    }
 
     private void dialogPilih_akun() {
         dialogs = new AlertDialog.Builder(Dashboard_activity.this);
@@ -838,6 +844,104 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         insert_call ru = new insert_call();
         ru.execute();
     }
+
+    private void createNote(String name, String email, String jk, String alamat, String no_hp, String tgl_lahir) {
+        long id = db.insertDonatur(name, email, jk, alamat, no_hp, tgl_lahir);
+
+        // get the newly inserted note from db
+        DataDonatur n = db.getDonatur(id);
+
+        if (n != null) {
+            // adding new note to array list at 0 position
+            donaturList.add(0, n);
+
+            AlertDialog.Builder builder;
+            builder = new AlertDialog.Builder(this);
+            builder.setMessage("success")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(intent);
+                            finish();
+
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
+
+    private void updateNote(DataDonatur dataDonatur, int position) {
+        DataDonatur n = donaturList.get(position);
+        // updating note text
+        n.setName(dataDonatur.getName());
+        n.setEmail(dataDonatur.getEmail());
+        n.setJenis_kelamin(dataDonatur.getJenis_kelamin());
+        n.setAlamat(dataDonatur.getAlamat());
+        n.setNo_hp(dataDonatur.getNo_hp());
+        n.setTanggal_lahir(dataDonatur.getTanggal_lahir());
+
+        // updating note in db
+        db.updateDonatur(n);
+
+        // refreshing the list
+        donaturList.set(position, n);
+        adapter.notifyDataSetChanged();
+    }
+
+    private void deleteNote(int position) {
+        // deleting the note from db
+        db.deleteDonatur(donaturList.get(position));
+
+        // removing the note from the list
+        donaturList.remove(position);
+
+    }
+
+    private void dialogCreate_donatur() {
+        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
+
+        final String url = Api_url.URL_CREATE_DONATUR;
+
+        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
+        txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
+        final EditText txt_alamat = (EditText) dialogView.findViewById(R.id.txt_alamat);
+        final EditText txt_email = (EditText) dialogView.findViewById(R.id.txt_email);
+        tgl_lahir = (TextView) dialogView.findViewById(R.id.txt_tgl_lahir);
+        txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
+        TextView txt_title = (TextView)dialogView.findViewById(R.id.txt_title);
+        txt_title.setText("CREATE DONATUR");
+
+        tgl_lahir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                showCalendar_edit();
+            }
+        });
+
+        btn_save = (Button) dialogView.findViewById(R.id.btn_save);
+        btn_save.setText("CREATE");
+        btn_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") ||
+                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                }else {
+                    createNote(txt_nama.getText().toString(),txt_email.getText().toString(), String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());
+                }
+
+            }
+        });
+
+        dialogs.show();
+    }
+
 
     @Override
     public void onBackPressed() {

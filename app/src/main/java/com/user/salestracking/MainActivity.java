@@ -53,6 +53,7 @@ import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialo
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.db.DatabaseHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     TextView txt_tgl_pembayaran, tgl_lahir;
     Button btn_call, btn_visit, btn_closing, btn_save, btn_edit;
     View dialogView;
+    private List<DataDonatur> donaturList = new ArrayList<>();
 
     private NavigationView navigationView;
     private DrawerLayout drawer;
@@ -141,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String datetf;
     String imageFilePath;
     private MediaPlayer mediaPlayer;
+    private DatabaseHelper db;
+    private DonaturlistAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        db = new DatabaseHelper(this);
+
         mHandler = new Handler();
         dialog = new ProgressDialog(MainActivity.this);
         donatur_list = new ArrayList<>();
@@ -190,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         user = session.getUserDetails();
 
         txtName.setText(user.get(SessionManager.KEY_NAMA));
-        txtCabang.setText(user.get(SessionManager.KEY_EMAIL));
+//        txtCabang.setText(user.get(SessionManager.KEY_EMAIL));
 
         if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
             txtType.setText("Sales Marketing");
@@ -201,7 +207,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }else {
             txtType.setText("Owner");
         }
-        request();
+//        request();
+
+        if (db.getAllDonatur() != null){
+            donaturList.addAll(db.getAllDonatur());
+            donatur_list.addAll(db.getAllDonatur());
+        }
+
+        adapter = new DonaturlistAdapter(this, R.layout.row_data_donatur, donaturList);
+        listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -605,25 +619,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (txt_nominal.getText().toString().equals("")) {
-                    Toast.makeText(getApplicationContext(), "Nominal tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }else if (txt_tgl_pembayaran.getText().toString().equals("") || ShowSelectedImage.getVisibility() == View.GONE){
-                    Toast.makeText(getApplicationContext(), "Tanggal pembayaran tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }else if (ShowSelectedImage.getVisibility() == View.GONE){
-                    Toast.makeText(getApplicationContext(), "Foto Bukti transfer/Cash tidak boleh kosong ", Toast.LENGTH_SHORT).show();
-                }else {
-                    if (String.valueOf(spinner.getSelectedItem()).equals("Cash")){
-                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
-                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner.getSelectedItem()),
-                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
-
-                    }else {
-                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
-                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner1.getSelectedItem()),
-                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
-
-                    }
-                }
+//                if (txt_nominal.getText().toString().equals("")) {
+//                    Toast.makeText(getApplicationContext(), "Nominal tidak boleh kosong", Toast.LENGTH_SHORT).show();
+//                }else if (txt_tgl_pembayaran.getText().toString().equals("") || ShowSelectedImage.getVisibility() == View.GONE){
+//                    Toast.makeText(getApplicationContext(), "Tanggal pembayaran tidak boleh kosong", Toast.LENGTH_SHORT).show();
+//                }else if (ShowSelectedImage.getVisibility() == View.GONE){
+//                    Toast.makeText(getApplicationContext(), "Foto Bukti transfer/Cash tidak boleh kosong ", Toast.LENGTH_SHORT).show();
+//                }else {
+//                    if (String.valueOf(spinner.getSelectedItem()).equals("Cash")){
+//                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+//                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner.getSelectedItem()),
+//                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
+//
+//                    }else {
+//                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+//                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner1.getSelectedItem()),
+//                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
+//
+//                    }
+//                }
 
             }
         });
@@ -686,12 +700,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
-                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }else {
-                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, donatur_list.get(pos).getId());
-                }
+//                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+//                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
+//                }else {
+//                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
+//                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, donatur_list.get(pos).getId());
+//                }
 
             }
         });
@@ -729,11 +743,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+//                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+//                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
+//                }else {
+//                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
+//                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
+//                }
+                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") ||
+                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
-                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
+                    createNote(txt_nama.getText().toString(),txt_email.getText().toString(), String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());
                 }
 
             }
@@ -825,13 +845,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(final View v) {
                 if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") ||
-                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("") ||  txt_password.getText().toString().equals("") || txt_cabang.getText().toString().equals("")){
+                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
-                    request_create_akun(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "",
-                            finalType, finalType_desc, txt_password.getText().toString(),txt_cabang.getText().toString());
+                    createNote(txt_nama.getText().toString(),txt_email.getText().toString(), String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());
                 }
+
 
             }
         });
@@ -925,60 +944,60 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /////////////// REQUEST SERVICE ////////////////////////////
 
-    private void request() {
-        class RegisterUser extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                RequestHandler requestHandler = new RequestHandler();
-
-                return requestHandler.getRequest(Api_url.GET_DATA_DONATUR);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                dialog.dismiss();
-                result(result);
-
-            }
-        }
-
-        RegisterUser ru = new RegisterUser();
-        ru.execute();
-    }
-
-    private void result(String result){
-        Log.d("result", result);
-        JSONObject jsonObject;
-        JSONArray jsonArray;
-        try {
-            jsonArray = new JSONArray(result);
-            for (int i = 0; i < jsonArray.length(); i++){
-                jsonObject = jsonArray.getJSONObject(i);
-
-                donatur_list.add(new DataDonatur(jsonObject.getString("id"),
-                        jsonObject.getString("nama"),
-                        jsonObject.getString("email"),
-                        jsonObject.getString("jenis_kelamin"),
-                        jsonObject.getString("alamat"),
-                        jsonObject.getString("nomor_hanphone"),
-                        jsonObject.getString("tgl_lahir")));
-                DonaturlistAdapter adapter = new DonaturlistAdapter(this, R.layout.row_data_donatur, donatur_list);
-                listView.setAdapter(adapter);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void request() {
+//        class RegisterUser extends AsyncTask<Void, Void, String> {
+//
+//
+//            @Override
+//            protected String doInBackground(Void... voids) {
+//                RequestHandler requestHandler = new RequestHandler();
+//
+//                return requestHandler.getRequest(Api_url.GET_DATA_DONATUR);
+//            }
+//
+//            @Override
+//            protected void onPreExecute() {
+//                super.onPreExecute();
+//                dialog.setMessage("please wait...");
+//                dialog.show();
+//            }
+//
+//            @Override
+//            protected void onPostExecute(String result) {
+//                super.onPostExecute(result);
+//                dialog.dismiss();
+//                result(result);
+//
+//            }
+//        }
+//
+//        RegisterUser ru = new RegisterUser();
+//        ru.execute();
+//    }
+//
+//    private void result(String result){
+//        Log.d("result", result);
+//        JSONObject jsonObject;
+//        JSONArray jsonArray;
+//        try {
+//            jsonArray = new JSONArray(result);
+//            for (int i = 0; i < jsonArray.length(); i++){
+//                jsonObject = jsonArray.getJSONObject(i);
+//
+//                donatur_list.add(new DataDonatur(jsonObject.getString("id"),
+//                        jsonObject.getString("nama"),
+//                        jsonObject.getString("email"),
+//                        jsonObject.getString("jenis_kelamin"),
+//                        jsonObject.getString("alamat"),
+//                        jsonObject.getString("nomor_hanphone"),
+//                        jsonObject.getString("tgl_lahir")));
+//                DonaturlistAdapter adapter = new DonaturlistAdapter(this, R.layout.row_data_donatur, donatur_list);
+//                listView.setAdapter(adapter);
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 
     private void request_post(final String aktivitas, final String hasil_aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
@@ -1622,6 +1641,63 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         };
     }
+
+    private void createNote(String name, String email, String jk, String alamat, String no_hp, String tgl_lahir) {
+        long id = db.insertDonatur(name, email, jk, alamat, no_hp, tgl_lahir);
+
+        // get the newly inserted note from db
+        DataDonatur n = db.getDonatur(id);
+
+        if (n != null) {
+            // adding new note to array list at 0 position
+            donaturList.add(0, n);
+
+            // refreshing the list
+            AlertDialog.Builder builder;
+            builder = new AlertDialog.Builder(this);
+            builder.setMessage("success")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(intent);
+                            finish();
+
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+
+        }
+    }
+
+    private void updateNote(DataDonatur dataDonatur, int position) {
+        DataDonatur n = donaturList.get(position);
+        // updating note text
+        n.setName(dataDonatur.getName());
+        n.setEmail(dataDonatur.getEmail());
+        n.setJenis_kelamin(dataDonatur.getJenis_kelamin());
+        n.setAlamat(dataDonatur.getAlamat());
+        n.setNo_hp(dataDonatur.getNo_hp());
+        n.setTanggal_lahir(dataDonatur.getTanggal_lahir());
+
+        // updating note in db
+        db.updateDonatur(n);
+
+        // refreshing the list
+        donaturList.set(position, n);
+        adapter.notifyDataSetChanged();
+    }
+
+    private void deleteNote(int position) {
+        // deleting the note from db
+        db.deleteDonatur(donaturList.get(position));
+
+        // removing the note from the list
+        donaturList.remove(position);
+
+    }
+
 
     @Override
     public void onBackPressed() {
