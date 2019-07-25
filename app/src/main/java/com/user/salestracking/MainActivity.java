@@ -440,11 +440,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_closing = (Button) dialogView.findViewById(R.id.btn_closing);
         btn_edit = (Button) dialogView.findViewById(R.id.btn_edit);
 
-        if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
+//        if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
             btn_edit.setVisibility(View.GONE);
-        }else{
-            btn_edit.setVisibility(View.VISIBLE);
-        }
+//        }else{
+//            btn_edit.setVisibility(View.VISIBLE);
+//        }
 
         btn_call.setOnClickListener(new View.OnClickListener() {
             @Override
