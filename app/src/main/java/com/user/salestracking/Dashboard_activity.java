@@ -53,7 +53,9 @@ import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialo
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.db.DatabaseClosing;
 import com.user.salestracking.db.DatabaseHelper;
+import com.user.salestracking.db.DatabaseList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -102,6 +104,8 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
     private DatabaseHelper db;
     private DonaturlistAdapter adapter;
     private List<DataDonatur> donaturList = new ArrayList<>();
+    private DatabaseList db_list;
+    private DatabaseClosing db_closing;
 
 
     @Override
@@ -110,6 +114,8 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         setContentView(R.layout.dashboard_main);
 
         db = new DatabaseHelper(this);
+        db_list = new DatabaseList(this);
+        db_closing = new DatabaseClosing(this);
         mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
         call_aray.clear();
         visit_aray.clear();
@@ -195,7 +201,11 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         }else {
             txtType.setText("Owner");
         }
-        request_call();
+//        request_call();
+
+        tv_total_call.setText(""+db_list.getAllDonatur().size());
+        tv_total_visit.setText(""+db_list.getAllDonatur_visit().size());
+        tv_total_closing.setText(""+db_closing.getAllDonatur().size());
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -206,9 +216,10 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
 
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu nav_Menu = navigationView.getMenu();
+        nav_Menu.findItem(R.id.create_akun).setVisible(false);
 
         if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
-            Menu nav_Menu = navigationView.getMenu();
             nav_Menu.findItem(R.id.create_akun).setVisible(false);
             nav_Menu.findItem(R.id.create_donatur).setVisible(false);
         }

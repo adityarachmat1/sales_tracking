@@ -2,7 +2,6 @@ package com.user.salestracking;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -19,7 +18,6 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -30,7 +28,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.Selection;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
@@ -39,7 +36,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -53,28 +49,24 @@ import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialo
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.db.DatabaseClosing;
 import com.user.salestracking.db.DatabaseHelper;
+import com.user.salestracking.db.DatabaseList;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -103,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     TextView txt_tgl_pembayaran, tgl_lahir;
     Button btn_call, btn_visit, btn_closing, btn_save, btn_edit;
     View dialogView;
+    private List<DataListClosing> databaseClosings = new ArrayList<DataListClosing>();
+    private List<DataListCall> databaseLists = new ArrayList<DataListCall>();
     private List<DataDonatur> donaturList = new ArrayList<>();
 
     private NavigationView navigationView;
@@ -144,6 +138,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String imageFilePath;
     private MediaPlayer mediaPlayer;
     private DatabaseHelper db;
+    private DatabaseList db_list;
+    private DatabaseClosing db_closing;
     private DonaturlistAdapter adapter;
 
     @Override
@@ -171,6 +167,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         db = new DatabaseHelper(this);
+        db_list = new DatabaseList(this);
+        db_closing = new DatabaseClosing(this);
 
         mHandler = new Handler();
         dialog = new ProgressDialog(MainActivity.this);
@@ -234,9 +232,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu nav_Menu = navigationView.getMenu();
+        nav_Menu.findItem(R.id.create_akun).setVisible(false);
 
         if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
-            Menu nav_Menu = navigationView.getMenu();
+
             nav_Menu.findItem(R.id.create_akun).setVisible(false);
             nav_Menu.findItem(R.id.create_donatur).setVisible(false);
         }
@@ -494,17 +494,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         txt_nama.setText(donatur_list.get(pos).getName());
         txt_noHp.setText(donatur_list.get(pos).getNo_hp());
 
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => " + c);
+
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+        final String formattedDate = df.format(c);
+
         btn_save = (Button) dialogView.findViewById(R.id.btn_save);
 
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (txt_catatan.getText().toString().equals("")){
-                    Toast.makeText(getApplicationContext(), "Catatan tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }else {
-                    request_post("CALL", String.valueOf(spinner.getSelectedItem()), txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
-                    , donatur_list.get(pos).getNo_hp(), txt_catatan.getText().toString(), "1", url, user.get(SessionManager.KEY_NAMA), "1");
-                }
+//                if (txt_catatan.getText().toString().equals("")){
+//                    Toast.makeText(getApplicationContext(), "Catatan tidak boleh kosong", Toast.LENGTH_SHORT).show();
+//                }else {
+//                    request_post("CALL", String.valueOf(spinner.getSelectedItem()), txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+//                    , donatur_list.get(pos).getNo_hp(), txt_catatan.getText().toString(), "1", url, user.get(SessionManager.KEY_NAMA), "1");
+//                }
+                createCall(txt_nama.getText().toString(), donatur_list.get(pos).getEmail(),String.valueOf(spinner.getSelectedItem()),
+                        donatur_list.get(pos).getAlamat(),txt_noHp.getText().toString(), "CALL",String.valueOf(spinner.getSelectedItem()),
+                        txt_catatan.getText().toString(), "1", formattedDate, "");
 
             }
         });
@@ -529,17 +538,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         txt_nama.setText(donatur_list.get(pos).getName());
         txt_noHp.setText(donatur_list.get(pos).getNo_hp());
 
+        Date c = Calendar.getInstance().getTime();
+
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+        final String formattedDate = df.format(c);
+
         btn_save = (Button) dialogView.findViewById(R.id.btn_save);
 
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (txt_catatan.getText().toString().equals("")){
-                    Toast.makeText(getApplicationContext(), "Catatan tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }else {
-                    request_post("VISIT", String.valueOf(spinner.getSelectedItem()), txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
-                            , donatur_list.get(pos).getNo_hp(), txt_catatan.getText().toString(), "2", url, user.get(SessionManager.KEY_NAMA), "2");
-                }
+//                if (txt_catatan.getText().toString().equals("")){
+//                    Toast.makeText(getApplicationContext(), "Catatan tidak boleh kosong", Toast.LENGTH_SHORT).show();
+//                }else {
+//                    request_post("VISIT", String.valueOf(spinner.getSelectedItem()), txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+//                            , donatur_list.get(pos).getNo_hp(), txt_catatan.getText().toString(), "2", url, user.get(SessionManager.KEY_NAMA), "2");
+//                }
+//
+//            }
+//        });
+
+                createCall(txt_nama.getText().toString(), donatur_list.get(pos).getEmail(),String.valueOf(spinner.getSelectedItem()),
+                        donatur_list.get(pos).getAlamat(),txt_noHp.getText().toString(), "VISIT",String.valueOf(spinner.getSelectedItem()),
+                        txt_catatan.getText().toString(), "2", formattedDate, "");
 
             }
         });
@@ -615,29 +636,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         txt_nominal    = (EditText) dialogView.findViewById(R.id.txt_nominal);
         txt_nominal.addTextChangedListener(onTextChangedListener());
 
+        Date c = Calendar.getInstance().getTime();
+
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+        final String formattedDate = df.format(c);
+
         btn_save = (Button) dialogView.findViewById(R.id.btn_save);
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-//                if (txt_nominal.getText().toString().equals("")) {
-//                    Toast.makeText(getApplicationContext(), "Nominal tidak boleh kosong", Toast.LENGTH_SHORT).show();
-//                }else if (txt_tgl_pembayaran.getText().toString().equals("") || ShowSelectedImage.getVisibility() == View.GONE){
-//                    Toast.makeText(getApplicationContext(), "Tanggal pembayaran tidak boleh kosong", Toast.LENGTH_SHORT).show();
-//                }else if (ShowSelectedImage.getVisibility() == View.GONE){
-//                    Toast.makeText(getApplicationContext(), "Foto Bukti transfer/Cash tidak boleh kosong ", Toast.LENGTH_SHORT).show();
-//                }else {
-//                    if (String.valueOf(spinner.getSelectedItem()).equals("Cash")){
-//                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+                if (txt_nominal.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "Nominal tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                }else if (txt_tgl_pembayaran.getText().toString().equals("") || ShowSelectedImage.getVisibility() == View.GONE){
+                    Toast.makeText(getApplicationContext(), "Tanggal pembayaran tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                }else if (ShowSelectedImage.getVisibility() == View.GONE){
+                    Toast.makeText(getApplicationContext(), "Foto Bukti transfer/Cash tidak boleh kosong ", Toast.LENGTH_SHORT).show();
+                }else {
+                    if (String.valueOf(spinner.getSelectedItem()).equals("Cash")){
+//                        cek_status(String.valueOf(donatur_list.get(pos).getId()),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
 //                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner.getSelectedItem()),
 //                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
-//
-//                    }else {
-//                        cek_status(donatur_list.get(pos).getId(),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
+
+                        createClosing(donatur_list.get(pos).getName(), donatur_list.get(pos).getEmail(),"",
+                                donatur_list.get(pos).getAlamat(),donatur_list.get(pos).getNo_hp(), "CLOSING","",
+                                "", "3", formattedDate, "", String.valueOf(spinner.getSelectedItem()),String.valueOf(spinner1.getSelectedItem()),txt_nominal.getText().toString(),
+                                txt_tgl_pembayaran.getText().toString(), "");
+                    }else {
+//                        cek_status(String.valueOf(donatur_list.get(pos).getId()),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
 //                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner1.getSelectedItem()),
 //                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
-//
-//                    }
-//                }
+                        createClosing(donatur_list.get(pos).getName(), donatur_list.get(pos).getEmail(),"",
+                                donatur_list.get(pos).getAlamat(),donatur_list.get(pos).getNo_hp(), "CLOSING","",
+                                "", "3", formattedDate, "", String.valueOf(spinner.getSelectedItem()),String.valueOf(spinner1.getSelectedItem()),txt_nominal.getText().toString(),
+                                txt_tgl_pembayaran.getText().toString(), "");
+
+                    }
+                }
 
             }
         });
@@ -1659,7 +1693,68 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .setCancelable(false)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
+                            startActivity(intent);
+                            finish();
+
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+
+        }
+    }
+
+    private void createCall(String name, String email, String jenis_kelamin, String alamat, String no_hp, String aktivitas, String hasil_aktivitas, String catatan
+            , String type_aktivitas, String date_record, String assign_by) {
+        long id = db_list.insertDonatur(name, email, jenis_kelamin, alamat, no_hp, aktivitas, hasil_aktivitas, catatan, type_aktivitas, date_record, assign_by);
+
+        // get the newly inserted note from db
+        DataListCall n = db_list.getDonatur(id);
+
+        if (n != null) {
+            // adding new note to array list at 0 position
+            databaseLists.add(0, n);
+
+            // refreshing the list
+            AlertDialog.Builder builder;
+            builder = new AlertDialog.Builder(this);
+            builder.setMessage("success")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
+                            startActivity(intent);
+                            finish();
+
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+
+        }
+    }
+
+    private void createClosing(String name, String email, String jenis_kelamin, String alamat, String no_hp, String aktivitas, String hasil_aktivitas, String catatan
+            , String type_aktivitas, String date_record, String assign_by, String type_transfer, String akun_bank, String nominal, String tanggal_transfer, String url_image) {
+        long id = db_closing.insertDonatur(name, email, jenis_kelamin, alamat, no_hp, aktivitas, hasil_aktivitas, catatan, type_aktivitas, date_record, assign_by, type_transfer,
+                akun_bank, nominal, tanggal_transfer, url_image);
+
+        // get the newly inserted note from db
+        DataListClosing n = db_closing.getDonatur(id);
+
+        if (n != null) {
+            // adding new note to array list at 0 position
+            databaseClosings.add(0, n);
+
+            // refreshing the list
+            AlertDialog.Builder builder;
+            builder = new AlertDialog.Builder(this);
+            builder.setMessage("success")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
                             startActivity(intent);
                             finish();
 

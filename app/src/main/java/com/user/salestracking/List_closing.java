@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -39,7 +40,9 @@ import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.squareup.picasso.Picasso;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.db.DatabaseClosing;
 import com.user.salestracking.db.DatabaseHelper;
+import com.user.salestracking.db.DatabaseList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -91,6 +94,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
     private MediaPlayer mediaPlayer;
 
     private DatabaseHelper db;
+    private DatabaseClosing db_closing;
     private DonaturlistAdapter adapter;
     private List<DataDonatur> donaturList = new ArrayList<>();
 
@@ -100,6 +104,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         db = new DatabaseHelper(this);
+        db_closing = new DatabaseClosing(this);
         mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
         setTitle("Sales Tracking");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -153,7 +158,13 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         }else {
             txtType.setText("Owner");
         }
-        request();
+//        request();
+        if (db_closing.getAllDonatur() != null){
+            dataListClosing.addAll(db_closing.getAllDonatur());
+        }
+
+        ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
+        listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -172,6 +183,8 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
 
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu nav_Menu = navigationView.getMenu();
+        nav_Menu.findItem(R.id.create_akun).setVisible(false);
         navigationView.setNavigationItemSelectedListener(this);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -298,16 +311,16 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
 //                    ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
 //                    listView.setAdapter(adapter);
 //                }else {
-                    if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
-                        dataListClosing.add(new DataListClosing(jsonObject.getString("id"), jsonObject.getString("aktivitas"),jsonObject.getString("nama"),
-                                jsonObject.getString("email"),jsonObject.getString("alamat"),jsonObject.getString("jenis_kelamin"),jsonObject.getString("no_hp"),
-                                jsonObject.getString("type_aktivitas"),jsonObject.getString("date_record"), jsonObject.getString("assign_by"),
-                                jsonObject.getString("type_transfer"),jsonObject.getString("akun_bank"),jsonObject.getString("nominal"),
-                                jsonObject.getString("tanggal_transfer"),jsonObject.getString("image_path")));
-                        ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
-                        listView.setAdapter(adapter);
-//                    }
-                }
+//                    if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
+//                        dataListClosing.add(new DataListClosing(jsonObject.getString("id"), jsonObject.getString("aktivitas"),jsonObject.getString("nama"),
+//                                jsonObject.getString("email"),jsonObject.getString("alamat"),jsonObject.getString("jenis_kelamin"),jsonObject.getString("no_hp"),
+//                                jsonObject.getString("type_aktivitas"),jsonObject.getString("date_record"), jsonObject.getString("assign_by"),
+//                                jsonObject.getString("type_transfer"),jsonObject.getString("akun_bank"),jsonObject.getString("nominal"),
+//                                jsonObject.getString("tanggal_transfer"),jsonObject.getString("image_path")));
+//                        ClosingAdapter adapter = new ClosingAdapter(this, R.layout.row_data_closing, dataListClosing);
+//                        listView.setAdapter(adapter);
+////                    }
+//                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -345,7 +358,7 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         TextView tv_registeredBy = (TextView) dialogView.findViewById(R.id.tv_registeredBy);
         LinearLayout ln_akun_bank = (LinearLayout) dialogView.findViewById(R.id.ln_akun_bank);
 
-        txt_nama.setText(dataListClosing.get(pos).getNama());
+        txt_nama.setText(dataListClosing.get(pos).getName());
         txt_email.setText(dataListClosing.get(pos).getEmail());
         txt_alamat.setText(dataListClosing.get(pos).getAlamat());
         tv_noHp.setText(dataListClosing.get(pos).getNo_hp());

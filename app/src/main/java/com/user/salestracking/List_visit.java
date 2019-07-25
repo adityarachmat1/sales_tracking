@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,6 +39,7 @@ import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
 import com.user.salestracking.db.DatabaseHelper;
+import com.user.salestracking.db.DatabaseList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,7 +61,7 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
     private SessionManager session;
     private HashMap<String, String> user;
     private ListView listView;
-    List<DataListVisit> dataListVisits;
+    List<DataListCall> dataListVisits;
     AlertDialog.Builder dialogs;
     private ProgressDialog dialog;
     LayoutInflater inflater;
@@ -86,9 +88,11 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             "Cash"
     };
     private MediaPlayer mediaPlayer;
+    private CallListAdapter adapter;
     private DatabaseHelper db;
-    private DonaturlistAdapter adapter;
+    private DatabaseList db_list;
     private List<DataDonatur> donaturList = new ArrayList<>();
+    private List<DataListCall> dataListCalls = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +100,7 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         setContentView(R.layout.activity_main);
 
         db = new DatabaseHelper(this);
+        db_list = new DatabaseList(this);
         mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
         setTitle("Sales Tracking");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -149,7 +154,14 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         }else {
             txtType.setText("Owner");
         }
-        request();
+//        request();
+        if (db_list.getAllDonatur_visit() != null){
+            dataListCalls.addAll(db_list.getAllDonatur_visit());
+            dataListVisits.addAll(db_list.getAllDonatur_visit());
+        }
+
+        adapter = new CallListAdapter(this, R.layout.row_data_visit, dataListVisits);
+        listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -168,6 +180,8 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
 
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu nav_Menu = navigationView.getMenu();
+        nav_Menu.findItem(R.id.create_akun).setVisible(false);
         navigationView.setNavigationItemSelectedListener(this);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -302,20 +316,20 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
 //                    listView.setAdapter(adapter);
 //                }else {
                     if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
-                        dataListVisits.add(new DataListVisit(
-                                jsonObject.getString("nama"),
-                                jsonObject.getString("email"),
-                                jsonObject.getString("jenis_kelamin"),
-                                jsonObject.getString("alamat"),
-                                jsonObject.getString("no_hp"),
-                                jsonObject.getString("aktivitas"),
-                                jsonObject.getString("hasil_aktivitas"),
-                                jsonObject.getString("catatan"),
-                                jsonObject.getString("type_aktivitas"),
-                                jsonObject.getString("date_record"),
-                                jsonObject.getString("assign_by")));
-                        VisitListAdapter adapter = new VisitListAdapter(this, R.layout.row_data_visit, dataListVisits);
-                        listView.setAdapter(adapter);
+//                        dataListVisits.add(new DataListVisit(
+//                                jsonObject.getString("nama"),
+//                                jsonObject.getString("email"),
+//                                jsonObject.getString("jenis_kelamin"),
+//                                jsonObject.getString("alamat"),
+//                                jsonObject.getString("no_hp"),
+//                                jsonObject.getString("aktivitas"),
+//                                jsonObject.getString("hasil_aktivitas"),
+//                                jsonObject.getString("catatan"),
+//                                jsonObject.getString("type_aktivitas"),
+//                                jsonObject.getString("date_record"),
+//                                jsonObject.getString("assign_by")));
+//                        VisitListAdapter adapter = new VisitListAdapter(this, R.layout.row_data_visit, dataListVisits);
+//                        listView.setAdapter(adapter);
 //                    }
                 }
             }

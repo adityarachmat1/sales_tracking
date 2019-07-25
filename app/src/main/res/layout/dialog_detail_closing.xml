@@ -215,6 +215,7 @@
                     android:layout_marginTop="15dp"
                     android:layout_marginBottom="5dp"
                     android:text="Closing By "
+                    android:visibility="gone"
                     android:textColor="@color/bpWhite" />
 
                 <TextView
@@ -225,6 +226,7 @@
                     android:layout_marginTop="15dp"
                     android:layout_marginBottom="5dp"
                     android:text="Aktivitas"
+                    android:visibility="gone"
                     android:textColor="@color/bpWhite" />
 
             </LinearLayout>
@@ -235,6 +237,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
                 android:padding="3dp"
+                android:visibility="gone"
                 android:background="@color/bp_disabled_day"
                 android:orientation="horizontal">
 

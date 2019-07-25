@@ -68,7 +68,7 @@ public class ClosingAdapter extends ArrayAdapter<DataListClosing> {
 
         //adding values to the list item
 //        imageView.setImageDrawable(context.getResources().getDrawable(hero.getImage()));
-        textViewName.setText(dataListClosing.getNama());
+        textViewName.setText(dataListClosing.getName());
         alamat.setText(dataListClosing.getAlamat());
         no_hp.setText(dataListClosing.getNo_hp());
         date.setText(dataListClosing.getDate_record());

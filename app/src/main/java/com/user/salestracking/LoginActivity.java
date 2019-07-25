@@ -45,9 +45,9 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Password Kosong", Toast.LENGTH_SHORT).show();
                 }else {
 //                    request();
-                    session.createLoginSession(String.valueOf(1), et_email.getText().toString(), "admin", "1");
+                    session.createLoginSession(String.valueOf(1), et_email.getText().toString(), "", "1");
 
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
                     startActivity(intent);
                     finish();
                 }

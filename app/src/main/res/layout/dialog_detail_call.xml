@@ -212,6 +212,7 @@
                     android:layout_marginTop="15dp"
                     android:layout_marginBottom="5dp"
                     android:text="Call By "
+                    android:visibility="gone"
                     android:textColor="@color/bpWhite" />
 
                 <TextView
@@ -222,6 +223,7 @@
                     android:layout_marginTop="15dp"
                     android:layout_marginBottom="5dp"
                     android:text="Aktivitas"
+                    android:visibility="gone"
                     android:textColor="@color/bpWhite" />
 
             </LinearLayout>
