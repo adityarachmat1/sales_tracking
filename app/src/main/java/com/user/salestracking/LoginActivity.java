@@ -74,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
                         Boolean isAvailable = false;
                             for (int i = 0; i < sales_list.size(); i++){
-                                if (sales_list.get(i).getEmail().equals(et_email.getText().toString()) && sales_list.get(i).getPassword().equals(et_password.getText().toString())){
+                                if (sales_list.get(i).getEmail().toUpperCase().equals(et_email.getText().toString().toUpperCase()) && sales_list.get(i).getPassword().equals(et_password.getText().toString().toUpperCase())){
                                     session.createLoginSession(String.valueOf(1),sales_list.get(i).getEmail(), sales_list.get(i).getName(), sales_list.get(i).getType_akun());
                                     isAvailable = true;
                                 }
@@ -182,7 +182,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(final View v) {
                 if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") ||
-                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")|| txt_password.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
                     createSales(txt_nama.getText().toString(), finalType1,txt_email.getText().toString(), txt_password.getText().toString(),String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());

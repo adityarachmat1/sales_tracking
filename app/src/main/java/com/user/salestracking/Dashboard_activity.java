@@ -461,6 +461,20 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         dialogs = new AlertDialog.Builder(Dashboard_activity.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_about_us, null);
+        TextView txt_about = (TextView) dialogView.findViewById(R.id.txt_about);
+        txt_about.setText("Sales tracking merupakan aplikasi untuk mencatat aktivitas sales, dan mememudahkan dalam pelaporan.\n" +
+                "Dalam aplikasi ini terdapat 2 Role yaitu Admin dan Sales, masing - masing punya Aplikasi untuk tiap role.\n" +
+                "\n" +
+                "Admin berfungsi untuk memantau aktifitas sales dan mendaftarkan sales baru\n" +
+                "\n" +
+                "Sales berfungsi untuk melakukan penginputan donatur dan aktivitas.\n" +
+                "\n" +
+                "alur :\n" +
+                "1.  Sales melakukan login aplikasi dengan mengisi username dan password.\n" +
+                "2. Klik garis di pojok kanan untuk memulai pencatatan.\n" +
+                "3. Pilih Donatur baru jika ingin membuat aku donatur.\n" +
+                "4. Pilih List Donatur jika ingin memulai input aktivitas.\n" +
+                "5. Untuk melihat laporan aktivitas, pilih list call, list visit atau list closing.");
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 

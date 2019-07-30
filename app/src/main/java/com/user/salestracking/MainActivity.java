@@ -57,6 +57,7 @@ import com.user.salestracking.db.DatabaseList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -186,6 +187,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         txtCabang = (TextView) navHeader.findViewById(R.id.website);
         txtType = (TextView) navHeader.findViewById(R.id.type);
         TextView txtTitle = (TextView) findViewById(R.id.title);
+        Button bty = (Button) findViewById(R.id.btn_export);
+        bty.setVisibility(View.GONE);
         txtTitle.setText("LIST DONATUR");
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -412,6 +415,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         dialogs = new AlertDialog.Builder(MainActivity.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_about_us, null);
+        TextView txt_about = (TextView) dialogView.findViewById(R.id.txt_about);
+        txt_about.setText("Sales tracking merupakan aplikasi untuk mencatat aktivitas sales, dan mememudahkan dalam pelaporan.\n" +
+                "Dalam aplikasi ini terdapat 2 Role yaitu Admin dan Sales, masing - masing punya Aplikasi untuk tiap role.\n" +
+                "\n" +
+                "Admin berfungsi untuk memantau aktifitas sales dan mendaftarkan sales baru\n" +
+                "\n" +
+                "Sales berfungsi untuk melakukan penginputan donatur dan aktivitas.\n" +
+                "\n" +
+                "alur :\n" +
+                "1.  Sales melakukan login aplikasi dengan mengisi username dan password.\n" +
+                "2. Klik garis di pojok kanan untuk memulai pencatatan.\n" +
+                "3. Pilih Donatur baru jika ingin membuat aku donatur.\n" +
+                "4. Pilih List Donatur jika ingin memulai input aktivitas.\n" +
+                "5. Untuk melihat laporan aktivitas, pilih list call, list visit atau list closing.");
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 

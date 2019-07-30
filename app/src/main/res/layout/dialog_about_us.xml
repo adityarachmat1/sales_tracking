@@ -23,23 +23,31 @@
                 android:textColor="@color/colorPrimary"/>
 
             <TextView
+                android:id="@+id/txt_about"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:textColor="@color/colorPrimary"
-                android:text="Dibuat oleh :" />
+                android:text="" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="45dp"
+                android:layout_marginTop="15dp"
+                android:textColor="@color/colorPrimary"
+                android:text="Dibuat Oleh" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:textColor="@color/colorPrimary"
                 android:text="Nama : Indah Fitriani" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="2dp"
                 android:textColor="@color/colorPrimary"
                 android:text="NPM : 201643579153" />
 
