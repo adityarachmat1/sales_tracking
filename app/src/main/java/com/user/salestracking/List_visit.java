@@ -3,6 +3,7 @@ package com.user.salestracking;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -36,16 +37,32 @@ import android.widget.Toast;
 
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
 import com.user.salestracking.db.DatabaseHelper;
 import com.user.salestracking.db.DatabaseList;
+import com.user.salestracking.permission.PermissionsActivity;
+import com.user.salestracking.permission.PermissionsChecker;
+import com.user.salestracking.utils.FileUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -56,6 +73,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.user.salestracking.permission.PermissionsActivity.PERMISSION_REQUEST_CODE;
+import static com.user.salestracking.permission.PermissionsChecker.REQUIRED_PERMISSION;
 
 public class List_visit extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SessionManager session;
@@ -93,6 +113,8 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
     private DatabaseList db_list;
     private List<DataDonatur> donaturList = new ArrayList<>();
     private List<DataListCall> dataListCalls = new ArrayList<>();
+    private Button btn_exportPDF;
+    PermissionsChecker checker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +129,8 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         setSupportActionBar(toolbar);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        btn_exportPDF = (Button) findViewById(R.id.btn_export);
+        checker = new PermissionsChecker(this);
 
         findViewById(R.id.drawer_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -206,6 +230,20 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
                         break;
                 }
                 return false;
+            }
+        });
+
+        btn_exportPDF.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (checker.lacksPermissions(REQUIRED_PERMISSION)) {
+                    PermissionsActivity.startActivityForResult(List_visit.this, PERMISSION_REQUEST_CODE, REQUIRED_PERMISSION);
+                } else {
+                    if (dataListCalls.size() > 0){
+                        createPdf(FileUtils.getAppPath(List_visit.this) + "DataListVisit.pdf");
+                    }else {
+                        Toast.makeText(List_visit.this, "List Visit Kosong", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
     }
@@ -791,6 +829,158 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         });
 
         dialogs.show();
+    }
+
+    public void createPdf(String dest) {
+
+        if (new File(dest).exists()) {
+            new File(dest).delete();
+        }
+
+        try {
+            /**
+             * Creating Document
+             */
+            Document document = new Document();
+
+            // Location to save
+            PdfWriter.getInstance(document, new FileOutputStream(dest));
+
+            // Open to write
+            document.open();
+
+            // Document Settings
+            document.setPageSize(PageSize.A4);
+            document.addCreationDate();
+            document.addAuthor("Android");
+            document.addCreator("Sales Tracking");
+
+            /***
+             * Variables for further use....
+             */
+            BaseColor mColorAccent = new BaseColor(0, 153, 204, 255);
+            float mHeadingFontSize = 24.0f;
+            float mValueFontSize = 20.0f;
+
+            /**
+             * How to USE FONT....
+             */
+            BaseFont urName = BaseFont.createFont("assets/fonts/brandon_medium.otf", "UTF-8", BaseFont.EMBEDDED);
+
+            // LINE SEPARATOR
+            LineSeparator lineSeparator = new LineSeparator();
+            lineSeparator.setLineColor(new BaseColor(0, 0, 0, 68));
+
+
+            Font mOrderDetailsTitleFont = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunk = new Chunk("Sales Tracking", mOrderDetailsTitleFont);
+            Paragraph mOrderDetailsTitleParagraph = new Paragraph(mOrderDetailsTitleChunk);
+            mOrderDetailsTitleParagraph.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagraph);
+
+            Font mOrderDetailsTitleFonta = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunka = new Chunk("Data List Visit", mOrderDetailsTitleFonta);
+            Paragraph mOrderDetailsTitleParagrapha = new Paragraph(mOrderDetailsTitleChunka);
+            mOrderDetailsTitleParagrapha.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagrapha);
+
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+
+            document.add(new Chunk("\n"));
+
+            for(int i = 0; i < dataListCalls.size(); i++){
+
+                int o = i + 1;
+                Font mOrderIdFontc = new Font(urName, mHeadingFontSize, Font.NORMAL, mColorAccent);
+                Chunk mOrderIdChunkc = new Chunk(""+o+".", mOrderIdFontc);
+                Paragraph mOrderIdParagraphc = new Paragraph(mOrderIdChunkc);
+                document.add(mOrderIdParagraphc);
+
+                Font mOrderIdFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderIdChunk = new Chunk("Nama Donatur: "+ dataListCalls.get(i).getName(), mOrderIdFont);
+                Paragraph mOrderIdParagraph = new Paragraph(mOrderIdChunk);
+                document.add(mOrderIdParagraph);
+
+                Font mOrderIdValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderIdValueChunk = new Chunk("Jemput Donasi: "+ dataListCalls.get(i).getHasil_aktivitas(), mOrderIdValueFont);
+                Paragraph mOrderIdValueParagraph = new Paragraph(mOrderIdValueChunk);
+                document.add(mOrderIdValueParagraph);
+
+                Font mOrderAcNameFonta = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderAcNameChunka = new Chunk("Email: "+ dataListCalls.get(i).getEmail(), mOrderAcNameFonta);
+                Paragraph mOrderAcNameParagrapha = new Paragraph(mOrderAcNameChunka);
+                document.add(mOrderAcNameParagrapha);
+
+                Font mOrderDateFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderDateChunk = new Chunk("Alamat: "+ dataListCalls.get(i).getAlamat(), mOrderDateFont);
+                Paragraph mOrderDateParagraph = new Paragraph(mOrderDateChunk);
+                document.add(mOrderDateParagraph);
+
+                Font mOrderDateValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderDateValueChunk = new Chunk("No. Hp : "+ dataListCalls.get(i).getNo_hp(), mOrderDateValueFont);
+                Paragraph mOrderDateValueParagraph = new Paragraph(mOrderDateValueChunk);
+                document.add(mOrderDateValueParagraph);
+
+                Font mOrderAcNameValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderAcNameValueChunk = new Chunk("Catatan: "+ dataListCalls.get(i).getCatatan(), mOrderAcNameValueFont);
+                Paragraph mOrderAcNameValueParagraph = new Paragraph(mOrderAcNameValueChunk);
+                document.add(mOrderAcNameValueParagraph);
+
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+            }
+
+            Date c = Calendar.getInstance().getTime();
+
+            document.add(new Chunk("\n"));
+
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            final String formattedDate = df.format(c);
+
+            Font mOrderDetailsTitleFonts = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunks = new Chunk("Jakarta, "+formattedDate, mOrderDetailsTitleFonts);
+            Paragraph mOrderDetailsTitleParagraphs = new Paragraph(mOrderDetailsTitleChunks);
+            mOrderDetailsTitleParagraphs.setAlignment(Element.ALIGN_RIGHT);
+            document.add(mOrderDetailsTitleParagraphs);
+
+            document.add(new Chunk(""));
+            document.add(new Chunk(""));
+            document.add(new Chunk(""));
+
+            Font mOrderDetailsTitleFontss = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunkss = new Chunk("( "+user.get(SessionManager.KEY_NAMA)+" )   ", mOrderDetailsTitleFontss);
+            Paragraph mOrderDetailsTitleParagraphss = new Paragraph(mOrderDetailsTitleChunkss);
+            mOrderDetailsTitleParagraphss.setAlignment(Element.ALIGN_RIGHT);
+            document.add(mOrderDetailsTitleParagraphss);
+
+            document.close();
+
+            FileUtils.openFile(List_visit.this, new File(dest));
+
+        } catch (IOException | DocumentException ie) {
+            Log.d("createPdf: Error " , ie.getLocalizedMessage());
+        } catch (ActivityNotFoundException ae) {
+            Toast.makeText(List_visit.this, "No application found to open this file.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == PermissionsActivity.PERMISSIONS_GRANTED) {
+            Toast.makeText(List_visit.this, "Permission Granted to Save", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(List_visit.this, "Permission not granted, Try again!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

@@ -3,9 +3,11 @@ package com.user.salestracking;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -37,18 +39,34 @@ import android.widget.Toast;
 
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.squareup.picasso.Picasso;
 import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
 import com.user.salestracking.db.DatabaseClosing;
 import com.user.salestracking.db.DatabaseHelper;
 import com.user.salestracking.db.DatabaseList;
+import com.user.salestracking.permission.PermissionsActivity;
+import com.user.salestracking.permission.PermissionsChecker;
+import com.user.salestracking.utils.FileUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -59,6 +77,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.user.salestracking.permission.PermissionsActivity.PERMISSION_REQUEST_CODE;
+import static com.user.salestracking.permission.PermissionsChecker.REQUIRED_PERMISSION;
 
 public class List_closing extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SessionManager session;
@@ -97,6 +118,8 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
     private DatabaseClosing db_closing;
     private DonaturlistAdapter adapter;
     private List<DataDonatur> donaturList = new ArrayList<>();
+    private Button btn_exportPDF;
+    PermissionsChecker checker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +134,8 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        btn_exportPDF = (Button) findViewById(R.id.btn_export);
+        checker = new PermissionsChecker(this);
 
         findViewById(R.id.drawer_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -209,6 +234,20 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
                         break;
                 }
                 return false;
+            }
+        });
+
+        btn_exportPDF.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (checker.lacksPermissions(REQUIRED_PERMISSION)) {
+                    PermissionsActivity.startActivityForResult(List_closing.this, PERMISSION_REQUEST_CODE, REQUIRED_PERMISSION);
+                } else {
+                    if (dataListClosing.size() > 0){
+                        createPdf(FileUtils.getAppPath(List_closing.this) + "DataListClosing.pdf");
+                    }else {
+                        Toast.makeText(List_closing.this, "List Visit Kosong", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
     }
@@ -392,54 +431,25 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
-        ImageView img_full = (ImageView) dialogView.findViewById(R.id.img_full);
-        Picasso.with(getApplicationContext()).load(dataListClosing.get(pos).getUrl_image()).into(img_full);
+        if (dataListClosing.get(pos).getUrl_image() != null){
+            File imgFile = new  File(dataListClosing.get(pos).getUrl_image());
+
+            if(imgFile.exists()){
+
+                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+                ImageView img_full = (ImageView) dialogView.findViewById(R.id.img_full);
+
+                img_full.setImageBitmap(myBitmap);
+
+            }
+        }
+
+
+//        Picasso.with(getApplicationContext()).load(dataListClosing.get(pos).getUrl_image()).into(img_full);
 
         dialogs.show();
     }
-
-//    private void dialogCreate_donatur() {
-//        dialogs = new AlertDialog.Builder(this);
-//        inflater = getLayoutInflater();
-//        dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
-//        dialogs.setView(dialogView);
-//        dialogs.setCancelable(true);
-//
-//        final String url = Api_url.URL_EDIT_DONATUR;
-//
-//        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
-//        txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
-//        final EditText txt_alamat = (EditText) dialogView.findViewById(R.id.txt_alamat);
-//        final EditText txt_email = (EditText) dialogView.findViewById(R.id.txt_email);
-//        tgl_lahir = (TextView) dialogView.findViewById(R.id.txt_tgl_lahir);
-//        txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
-//        TextView txt_title = (TextView)dialogView.findViewById(R.id.txt_title);
-//        txt_title.setText("CREATE DONATUR");
-//
-//        tgl_lahir.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(final View v) {
-//                showCalendar_edit();
-//            }
-//        });
-//
-//        btn_save = (Button) dialogView.findViewById(R.id.btn_save);
-//        btn_save.setText("CREATE");
-//        btn_save.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(final View v) {
-//                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
-//                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
-//                }else {
-//                    request_create(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-//                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
-//                }
-//
-//            }
-//        });
-//
-//        dialogs.show();
-//    }
 
     private void dialogCreate_akun() {
         dialogs = new AlertDialog.Builder(this);
@@ -811,6 +821,170 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
         });
 
         dialogs.show();
+    }
+
+    public void createPdf(String dest) {
+
+        if (new File(dest).exists()) {
+            new File(dest).delete();
+        }
+
+        try {
+            /**
+             * Creating Document
+             */
+            Document document = new Document();
+
+            // Location to save
+            PdfWriter.getInstance(document, new FileOutputStream(dest));
+
+            // Open to write
+            document.open();
+
+            // Document Settings
+            document.setPageSize(PageSize.A4);
+            document.addCreationDate();
+            document.addAuthor("Android");
+            document.addCreator("Sales Tracking");
+
+            /***
+             * Variables for further use....
+             */
+            BaseColor mColorAccent = new BaseColor(0, 153, 204, 255);
+            float mHeadingFontSize = 24.0f;
+            float mValueFontSize = 20.0f;
+
+            /**
+             * How to USE FONT....
+             */
+            BaseFont urName = BaseFont.createFont("assets/fonts/brandon_medium.otf", "UTF-8", BaseFont.EMBEDDED);
+
+            // LINE SEPARATOR
+            LineSeparator lineSeparator = new LineSeparator();
+            lineSeparator.setLineColor(new BaseColor(0, 0, 0, 68));
+
+
+            Font mOrderDetailsTitleFont = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunk = new Chunk("Sales Tracking", mOrderDetailsTitleFont);
+            Paragraph mOrderDetailsTitleParagraph = new Paragraph(mOrderDetailsTitleChunk);
+            mOrderDetailsTitleParagraph.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagraph);
+
+            Font mOrderDetailsTitleFonta = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunka = new Chunk("Data List Closing", mOrderDetailsTitleFonta);
+            Paragraph mOrderDetailsTitleParagrapha = new Paragraph(mOrderDetailsTitleChunka);
+            mOrderDetailsTitleParagrapha.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagrapha);
+
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+
+            document.add(new Chunk("\n"));
+
+            for(int i = 0; i < dataListClosing.size(); i++){
+
+                int o = i + 1;
+                Font mOrderIdFontc = new Font(urName, mHeadingFontSize, Font.NORMAL, mColorAccent);
+                Chunk mOrderIdChunkc = new Chunk(""+o+".", mOrderIdFontc);
+                Paragraph mOrderIdParagraphc = new Paragraph(mOrderIdChunkc);
+                document.add(mOrderIdParagraphc);
+
+                Font mOrderIdFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderIdChunk = new Chunk("Nama Donatur: "+ dataListClosing.get(i).getName(), mOrderIdFont);
+                Paragraph mOrderIdParagraph = new Paragraph(mOrderIdChunk);
+                document.add(mOrderIdParagraph);
+
+                Font mOrderAcNameFonta = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderAcNameChunka = new Chunk("Email: "+ dataListClosing.get(i).getEmail(), mOrderAcNameFonta);
+                Paragraph mOrderAcNameParagrapha = new Paragraph(mOrderAcNameChunka);
+                document.add(mOrderAcNameParagrapha);
+
+                Font mOrderDateFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderDateChunk = new Chunk("Alamat: "+ dataListClosing.get(i).getAlamat(), mOrderDateFont);
+                Paragraph mOrderDateParagraph = new Paragraph(mOrderDateChunk);
+                document.add(mOrderDateParagraph);
+
+                Font mOrderDateValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderDateValueChunk = new Chunk("No. Hp : "+ dataListClosing.get(i).getNo_hp(), mOrderDateValueFont);
+                Paragraph mOrderDateValueParagraph = new Paragraph(mOrderDateValueChunk);
+                document.add(mOrderDateValueParagraph);
+
+                Font mOrderAcNameValueFontx = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderAcNameValueChunkx = new Chunk("Type Pembayaran :"+dataListClosing.get(i).getType_transfer(), mOrderAcNameValueFontx);
+                Paragraph mOrderAcNameValueParagraphx = new Paragraph(mOrderAcNameValueChunkx);
+                document.add(mOrderAcNameValueParagraphx);
+
+                if (dataListClosing.get(i).getAkun_bank() != null) {
+                    Font mOrderAcNameValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                    Chunk mOrderAcNameValueChunk = new Chunk("Akun BANK :" + dataListClosing.get(i).getAkun_bank(), mOrderAcNameValueFont);
+                    Paragraph mOrderAcNameValueParagraph = new Paragraph(mOrderAcNameValueChunk);
+                    document.add(mOrderAcNameValueParagraph);
+                }
+
+                Font mOrderAcNameValueFonts = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderAcNameValueChunks = new Chunk("Nominal : "+"Rp. "+ dataListClosing.get(i).getNominal(), mOrderAcNameValueFonts);
+                Paragraph mOrderAcNameValueParagraphs = new Paragraph(mOrderAcNameValueChunks);
+                document.add(mOrderAcNameValueParagraphs);
+
+                Font mOrderIdValueFontz = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderIdValueChunkz= new Chunk("Tanggal Transfer: "+ dataListClosing.get(i).getTanggal_transfer(), mOrderIdValueFontz);
+                Paragraph mOrderIdValueParagraphz = new Paragraph(mOrderIdValueChunkz);
+                document.add(mOrderIdValueParagraphz);
+
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+            }
+
+            Date c = Calendar.getInstance().getTime();
+
+            document.add(new Chunk("\n"));
+
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            final String formattedDate = df.format(c);
+
+            Font mOrderDetailsTitleFonts = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunks = new Chunk("Jakarta, "+formattedDate, mOrderDetailsTitleFonts);
+            Paragraph mOrderDetailsTitleParagraphs = new Paragraph(mOrderDetailsTitleChunks);
+            mOrderDetailsTitleParagraphs.setAlignment(Element.ALIGN_RIGHT);
+            document.add(mOrderDetailsTitleParagraphs);
+
+            document.add(new Chunk(""));
+            document.add(new Chunk(""));
+            document.add(new Chunk(""));
+
+            Font mOrderDetailsTitleFontss = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunkss = new Chunk("( "+user.get(SessionManager.KEY_NAMA)+" )   ", mOrderDetailsTitleFontss);
+            Paragraph mOrderDetailsTitleParagraphss = new Paragraph(mOrderDetailsTitleChunkss);
+            mOrderDetailsTitleParagraphss.setAlignment(Element.ALIGN_RIGHT);
+            document.add(mOrderDetailsTitleParagraphss);
+
+            document.close();
+
+            FileUtils.openFile(List_closing.this, new File(dest));
+
+        } catch (IOException | DocumentException ie) {
+            Log.d("createPdf: Error " , ie.getLocalizedMessage());
+        } catch (ActivityNotFoundException ae) {
+            Toast.makeText(List_closing.this, "No application found to open this file.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == PermissionsActivity.PERMISSIONS_GRANTED) {
+            Toast.makeText(List_closing.this, "Permission Granted to Save", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(List_closing.this, "Permission not granted, Try again!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

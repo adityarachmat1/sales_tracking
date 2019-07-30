@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
@@ -51,6 +52,7 @@ import com.user.salestracking.Api_Service.Api_url;
 import com.user.salestracking.Api_Service.RequestHandler;
 import com.user.salestracking.db.DatabaseClosing;
 import com.user.salestracking.db.DatabaseHelper;
+import com.user.salestracking.db.DatabaseHelperAkun;
 import com.user.salestracking.db.DatabaseList;
 
 import org.json.JSONException;
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private List<DataListClosing> databaseClosings = new ArrayList<DataListClosing>();
     private List<DataListCall> databaseLists = new ArrayList<DataListCall>();
     private List<DataDonatur> donaturList = new ArrayList<>();
+    private List<DataSales> salesList = new ArrayList<>();
 
     private NavigationView navigationView;
     private DrawerLayout drawer;
@@ -138,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String imageFilePath;
     private MediaPlayer mediaPlayer;
     private DatabaseHelper db;
+    private DatabaseHelperAkun db_sales;
     private DatabaseList db_list;
     private DatabaseClosing db_closing;
     private DonaturlistAdapter adapter;
@@ -167,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         db = new DatabaseHelper(this);
+        db_sales = new DatabaseHelperAkun(this);
         db_list = new DatabaseList(this);
         db_closing = new DatabaseClosing(this);
 
@@ -233,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         Menu nav_Menu = navigationView.getMenu();
-        nav_Menu.findItem(R.id.create_akun).setVisible(false);
+//        nav_Menu.findItem(R.id.create_akun).setVisible(false);
 
         if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
 
@@ -653,22 +658,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Toast.makeText(getApplicationContext(), "Foto Bukti transfer/Cash tidak boleh kosong ", Toast.LENGTH_SHORT).show();
                 }else {
                     if (String.valueOf(spinner.getSelectedItem()).equals("Cash")){
-//                        cek_status(String.valueOf(donatur_list.get(pos).getId()),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
-//                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner.getSelectedItem()),
-//                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
-
                         createClosing(donatur_list.get(pos).getName(), donatur_list.get(pos).getEmail(),"",
                                 donatur_list.get(pos).getAlamat(),donatur_list.get(pos).getNo_hp(), "CLOSING","",
-                                "", "3", formattedDate, "", String.valueOf(spinner.getSelectedItem()),String.valueOf(spinner1.getSelectedItem()),txt_nominal.getText().toString(),
-                                txt_tgl_pembayaran.getText().toString(), "");
+                                "", "3", formattedDate, "", String.valueOf(spinner.getSelectedItem()),"-",txt_nominal.getText().toString(),
+                                txt_tgl_pembayaran.getText().toString(), imageFilePath);
                     }else {
-//                        cek_status(String.valueOf(donatur_list.get(pos).getId()),"CLOSING", txt_nama.getText().toString(),donatur_list.get(pos).getEmail(), donatur_list.get(pos).getAlamat(), donatur_list.get(pos).getJenis_kelamin()
-//                                , donatur_list.get(pos).getNo_hp(), "3", url, user.get(SessionManager.KEY_NAMA), "3", String.valueOf(spinner.getSelectedItem()), String.valueOf(spinner1.getSelectedItem()),
-//                                txt_nominal.getText().toString(), txt_tgl_pembayaran.getText().toString());
                         createClosing(donatur_list.get(pos).getName(), donatur_list.get(pos).getEmail(),"",
                                 donatur_list.get(pos).getAlamat(),donatur_list.get(pos).getNo_hp(), "CLOSING","",
                                 "", "3", formattedDate, "", String.valueOf(spinner.getSelectedItem()),String.valueOf(spinner1.getSelectedItem()),txt_nominal.getText().toString(),
-                                txt_tgl_pembayaran.getText().toString(), "");
+                                txt_tgl_pembayaran.getText().toString(), imageFilePath);
 
                     }
                 }
@@ -857,7 +855,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LinearLayout ln_password = (LinearLayout) dialogView.findViewById(R.id.ln_password);
         LinearLayout ln_cabang = (LinearLayout) dialogView.findViewById(R.id.ln_cabang);
         ln_password.setVisibility(View.VISIBLE);
-        ln_cabang.setVisibility(View.VISIBLE);
+//        ln_cabang.setVisibility(View.VISIBLE);
         final EditText txt_password = (EditText) dialogView.findViewById(R.id.txt_password);
         final EditText txt_cabang = (EditText) dialogView.findViewById(R.id.txt_cabang);
 
@@ -875,6 +873,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final String finalType = type;
         final String finalType_desc = type_desc;
 
+        final String finalType1 = type;
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
@@ -882,7 +881,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
-                    createNote(txt_nama.getText().toString(),txt_email.getText().toString(), String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());
+                    createSales(txt_nama.getText().toString(), finalType1,txt_email.getText().toString(), txt_password.getText().toString(),String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());
                 }
 
 
@@ -976,540 +975,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     ////////////////////// DIALOG ////////////////////////////
 
-    /////////////// REQUEST SERVICE ////////////////////////////
-
-//    private void request() {
-//        class RegisterUser extends AsyncTask<Void, Void, String> {
-//
-//
-//            @Override
-//            protected String doInBackground(Void... voids) {
-//                RequestHandler requestHandler = new RequestHandler();
-//
-//                return requestHandler.getRequest(Api_url.GET_DATA_DONATUR);
-//            }
-//
-//            @Override
-//            protected void onPreExecute() {
-//                super.onPreExecute();
-//                dialog.setMessage("please wait...");
-//                dialog.show();
-//            }
-//
-//            @Override
-//            protected void onPostExecute(String result) {
-//                super.onPostExecute(result);
-//                dialog.dismiss();
-//                result(result);
-//
-//            }
-//        }
-//
-//        RegisterUser ru = new RegisterUser();
-//        ru.execute();
-//    }
-//
-//    private void result(String result){
-//        Log.d("result", result);
-//        JSONObject jsonObject;
-//        JSONArray jsonArray;
-//        try {
-//            jsonArray = new JSONArray(result);
-//            for (int i = 0; i < jsonArray.length(); i++){
-//                jsonObject = jsonArray.getJSONObject(i);
-//
-//                donatur_list.add(new DataDonatur(jsonObject.getString("id"),
-//                        jsonObject.getString("nama"),
-//                        jsonObject.getString("email"),
-//                        jsonObject.getString("jenis_kelamin"),
-//                        jsonObject.getString("alamat"),
-//                        jsonObject.getString("nomor_hanphone"),
-//                        jsonObject.getString("tgl_lahir")));
-//                DonaturlistAdapter adapter = new DonaturlistAdapter(this, R.layout.row_data_donatur, donatur_list);
-//                listView.setAdapter(adapter);
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
-    private void request_post(final String aktivitas, final String hasil_aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
-                              final String noHp, final String catatan, final String type, final String url, final String assign, final String status) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                Date c = Calendar.getInstance().getTime();
-                System.out.println("Current time => " + c);
-
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy HH:mm");
-                String formattedDate = df.format(c);
-
-                //creating request parameters
-                HashMap<String, String> params = new HashMap<>();
-                params.put("aktivitas", aktivitas);
-                params.put("hasil_aktivitas", hasil_aktivitas);
-                params.put("nama", nama);
-                params.put("email", email);
-                params.put("alamat", alamat);
-                params.put("jenis_kelamin", jenis_kelamin);
-                params.put("no_hp", noHp);
-                params.put("catatan", catatan);
-                params.put("type_aktivitas", type);
-                params.put("date_record", formattedDate);
-                params.put("assign_by", assign);
-                params.put("status", status);
-                //returing the response
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Log.d("result", result);
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        popup_success(obj.getString("message"));
-                    } else {
-                        popup_failed(obj.getString("message"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        insert_call ru = new insert_call();
-        ru.execute();
-    }
-
-    private void request_postClosing(final String id, final String aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
-                                     final String noHp, final String type, final String url, final String assign, final String status, final String typeTransfer,
-                                     final String akunBank, final String nominal, final String dateTransfer) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-
-
-            @SuppressLint("SimpleDateFormat")
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                Date c = Calendar.getInstance().getTime();
-                System.out.println("Current time => " + c);
-
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy HH:mm");
-                String formattedDate = df.format(c);
-
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
-                Date newDate = null;
-                try {
-                    newDate = format.parse(dateTransfer);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                format = new SimpleDateFormat("dd MMMM yyyy");
-                String date = format.format(newDate);
-
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat formats = new SimpleDateFormat("dd-MM-yyyy");
-                Date newDates = null;
-                try {
-                    newDates = formats.parse(dateTransfer);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                formats = new SimpleDateFormat("dd-MMMM-yyyy");
-                datetf = formats.format(newDates);
-
-                //creating request parameters
-                HashMap<String, String> params = new HashMap<>();
-                params.put("aktivitas", aktivitas);
-                params.put("nama", nama);
-                params.put("email", email);
-                params.put("alamat", alamat);
-                params.put("jenis_kelamin", jenis_kelamin);
-                params.put("no_hp", noHp);
-                params.put("type_aktivitas", type);
-                params.put("date_record", formattedDate);
-                params.put("assign_by", assign);
-                params.put("status", status);
-                params.put("type_transfer", typeTransfer);
-                params.put("akun_bank", akunBank);
-                params.put("nominal", nominal);
-                params.put("tanggal_transfer", date);
-                //returing the response
-                Log.d("jsonClose", params.toString());
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        UploadImageToServer(email, nama, datetf, id);
-                    } else {
-                        popup_failed(obj.getString("message"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        insert_call ru = new insert_call();
-        ru.execute();
-    }
-
-    private void request_Edit_donatur(final String nama, final String email, final String alamat, final String jenis_kelamin, final String tanggal_lahir,
-                              final String noHp,final String url,final String id) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                HashMap<String, String> params = new HashMap<>();
-                params.put("nama", nama);
-                params.put("email", email);
-                params.put("alamat", alamat);
-                params.put("jenis_kelamin", jenis_kelamin);
-                params.put("nomor_hanphone", noHp);
-                params.put("tgl_lahir", tanggal_lahir);
-                params.put("id", id);
-                //returing the response
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Log.d("result", result);
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        popup_success(obj.getString("message"));
-                    } else {
-                        popup_failed(obj.getString("message"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        insert_call ru = new insert_call();
-        ru.execute();
-    }
-
-    private void request_create_akun(final String nama, final String email, final String alamat, final String jenis_kelamin, final String tanggal_lahir,
-                                     final String noHp, final String url, final String id, final String type, final String type_desc, final String password,
-                                     final String cabang) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                HashMap<String, String> params = new HashMap<>();
-                params.put("nama", nama);
-                params.put("email", email);
-                params.put("alamat", alamat);
-                params.put("jenis_kelamin", jenis_kelamin);
-                params.put("nomor_hanphone", noHp);
-                params.put("tgl_lahir", tanggal_lahir);
-                params.put("id", id);
-                params.put("type", type);
-                params.put("type_desc", type_desc);
-                params.put("password", password);
-                params.put("cabang", cabang);
-                //returing the response
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Log.d("result", result);
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        popup_success(obj.getString("message"));
-                    } else {
-                        popup_failed(obj.getString("message"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        insert_call ru = new insert_call();
-        ru.execute();
-    }
-
-    private void cek_status(final String id, final String aktivitas, final String nama, final String email, final String alamat, final String jenis_kelamin,
-                            final String noHp, final String type, final String url, final String assign, final String status, final String typeTransfer,
-                            final String akunBank, final String nominal, final String dateTransfer) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                HashMap<String, String> params = new HashMap<>();
-                params.put("id", id);
-                params.put("status", "");
-                //returing the response
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Log.d("result", result);
-                final String urls = Api_url.URL_INSERT_CLOSING;
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        JSONObject jsonObject = obj.getJSONObject("user");
-                        String status_ = jsonObject.getString("status_closing");
-                        if(status_.equals("")) {
-                            if (typeTransfer.equals("Cash")){
-                                request_postClosing(id,"CLOSING", nama,email, alamat, jenis_kelamin
-                                        ,noHp, "3", urls, user.get(SessionManager.KEY_NAMA), "3", typeTransfer, "",
-                                        nominal, dateTransfer);
-                            }else {
-                                request_postClosing(id,"CLOSING", nama,email, alamat, jenis_kelamin
-                                        ,noHp, "3", urls, user.get(SessionManager.KEY_NAMA), "3", typeTransfer, akunBank,
-                                        nominal, dateTransfer);
-                            }
-                        }
-                    } else {
-                        popup_failed(obj.getString("message"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        insert_call ru = new insert_call();
-        ru.execute();
-    }
-
-    private void update_status(final String id, final String nama, final String tgl_tf) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-            final String url = Api_url.URL_UPDATE_STATUS;
-
-            @SuppressLint("SimpleDateFormat")
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                HashMap<String, String> params = new HashMap<>();
-                params.put("id", id);
-                params.put("status", "1");
-
-                //returing the response
-                Log.d("jsonClose", params.toString());
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Log.d("result", result);
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        popup_success(obj.getString("message"));
-                    } else {
-                        popup_failed(obj.getString("message"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        insert_call ru = new insert_call();
-        ru.execute();
-    }
-
-    public void UploadImageToServer(final String email, final String nama, final String tgl_tf, final String id_index){
-        final String url = Api_url.URL_UPLOAD_IMAGE;
-        FixBitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream);
-        byteArray = byteArrayOutputStream.toByteArray();
-        ConvertImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
-        class AsyncTaskUploadClass extends AsyncTask<Void,Void,String> {
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                progressDialog = ProgressDialog.show(MainActivity.this,"Uploading","Please Wait",false,false);
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                progressDialog.dismiss();
-                if (result.equals("Please Try Again")){
-                    popup_failed(result);
-                }else {
-                    update_status(id_index, nama, datetf);
-                }
-            }
-
-            @Override
-            protected String doInBackground(Void... params) {
-                Date c = Calendar.getInstance().getTime();
-                System.out.println("Current time => " + c);
-
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-                String formattedDate = df.format(c);
-
-                ImageProcessClass imageProcessClass = new ImageProcessClass();
-                HashMap<String,String> HashMapParams = new HashMap<String,String>();
-                HashMapParams.put(ImageTag, "IMG("+nama+")_"+formattedDate);
-                HashMapParams.put(ImageName, ConvertImage);
-                HashMapParams.put("email", email);
-                HashMapParams.put("server_url", Api_url.URL_SERVER+"IMG("+nama+")_"+formattedDate+".jpg");
-                Log.d("Params", HashMapParams.toString());
-                String FinalData = imageProcessClass.ImageHttpRequest(url, HashMapParams);
-                return FinalData;
-            }
-        }
-        AsyncTaskUploadClass AsyncTaskUploadClassOBJ = new AsyncTaskUploadClass();
-        AsyncTaskUploadClassOBJ.execute();
-    }
-
-    public class ImageProcessClass{
-
-        public String ImageHttpRequest(String requestURL,HashMap<String, String> PData) {
-            StringBuilder stringBuilder = new StringBuilder();
-
-            try {
-                url_image = new URL(requestURL);
-                httpURLConnection = (HttpURLConnection) url_image.openConnection();
-                httpURLConnection.setReadTimeout(20000);
-                httpURLConnection.setConnectTimeout(20000);
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoInput(true);
-                httpURLConnection.setDoOutput(true);
-                outputStream = httpURLConnection.getOutputStream();
-                bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
-                bufferedWriter.write(bufferedWriterDataFN(PData));
-                bufferedWriter.flush();
-                bufferedWriter.close();
-                outputStream.close();
-                RC = httpURLConnection.getResponseCode();
-                if (RC == HttpsURLConnection.HTTP_OK) {
-                    bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-                    stringBuilder = new StringBuilder();
-                    String RC2;
-                    while ((RC2 = bufferedReader.readLine()) != null){
-                        stringBuilder.append(RC2);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return stringBuilder.toString();
-        }
-
-        private String bufferedWriterDataFN(HashMap<String, String> HashMapParams) throws UnsupportedEncodingException {
-            stringBuilder = new StringBuilder();
-            for (Map.Entry<String, String> KEY : HashMapParams.entrySet()) {
-                if (check)
-                    check = false;
-                else
-                    stringBuilder.append("&");
-                stringBuilder.append(URLEncoder.encode(KEY.getKey(), "UTF-8"));
-                stringBuilder.append("=");
-                stringBuilder.append(URLEncoder.encode(KEY.getValue(), "UTF-8"));
-            }
-
-            return stringBuilder.toString();
-        }
-    }
-
-    //////////////// REQUEST SERVICE ////////////////////////
-
 
     /////////////////// CAMERA //////////////////////
 
@@ -1600,6 +1065,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (requestCode == GALLERY) {
             if (data != null) {
                 Uri contentURI = data.getData();
+                if (contentURI != null) {
+                    imageFilePath = getRealPathFromURI(contentURI);
+                }
                 try {
                     FixBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
                     // String path = saveImage(bitmap);
@@ -1615,6 +1083,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         }
     }
+    public String getRealPathFromURI(Uri uri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        @SuppressWarnings("deprecation")
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        int column_index = cursor
+                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
+
 
     private File createImageFile() throws IOException {
         String timeStamp =
@@ -1685,6 +1163,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (n != null) {
             // adding new note to array list at 0 position
             donaturList.add(0, n);
+
+            // refreshing the list
+            AlertDialog.Builder builder;
+            builder = new AlertDialog.Builder(this);
+            builder.setMessage("success")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
+                            startActivity(intent);
+                            finish();
+
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+
+        }
+    }
+
+    private void createSales(String name, String type, String email,String Password, String jk, String alamat, String no_hp, String tgl_lahir) {
+        long id = db_sales.insertDonatur(name, type, email,Password, jk, alamat, no_hp, tgl_lahir);
+
+        // get the newly inserted note from db
+        DataSales n = db_sales.getDonatur(id);
+
+        if (n != null) {
+            // adding new note to array list at 0 position
+            salesList.add(0, n);
 
             // refreshing the list
             AlertDialog.Builder builder;

@@ -41,6 +41,9 @@
         <activity android:name=".List_closing"
             android:screenOrientation="portrait">
         </activity>
+        <activity
+            android:name=".permission.PermissionsActivity"
+            android:screenOrientation="portrait" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

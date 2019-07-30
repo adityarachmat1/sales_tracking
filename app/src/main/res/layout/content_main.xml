@@ -23,6 +23,15 @@
             android:text="SALES TRACKING"
             android:textColor="@color/bpDarker_blue"
             android:textSize="24dp" />
+
+        <Button
+            android:id="@+id/btn_export"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bpRed_focused"
+            android:text="Export PDF"
+            android:textColor="@color/bpWhite" />
     </LinearLayout>
 
     <ListView
