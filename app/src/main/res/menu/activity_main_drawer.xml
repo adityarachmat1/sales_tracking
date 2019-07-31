@@ -22,6 +22,10 @@
             android:id="@+id/dashboard"
             android:title="Dashboard" />
         <item
+            android:id="@+id/list_sales"
+            android:icon="@drawable/ic_accessibility_black_24dp"
+            android:title="List Sales" />
+        <item
             android:id="@+id/list_call"
             android:icon="@drawable/ic_call_black_24dp"
             android:title="@string/list_call" />

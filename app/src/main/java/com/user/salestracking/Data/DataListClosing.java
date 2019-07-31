@@ -1,4 +1,4 @@
-package com.user.salestracking;
+package com.user.salestracking.Data;
 
 public class DataListClosing {
     public static final String TABLE_NAME = "notes_3";

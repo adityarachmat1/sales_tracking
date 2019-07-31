@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ProgressBar;
 
+import com.user.salestracking.db.SessionManager;
+
 import java.util.Timer;
 import java.util.TimerTask;
 

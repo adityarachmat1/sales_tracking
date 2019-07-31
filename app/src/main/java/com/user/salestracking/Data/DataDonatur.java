@@ -1,4 +1,4 @@
-package com.user.salestracking;
+package com.user.salestracking.Data;
 
 public class DataDonatur {
     public static final String TABLE_NAME = "notes";

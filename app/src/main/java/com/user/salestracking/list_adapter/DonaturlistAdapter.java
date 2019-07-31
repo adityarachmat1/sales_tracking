@@ -1,17 +1,16 @@
-package com.user.salestracking;
+package com.user.salestracking.list_adapter;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.user.salestracking.Data.DataDonatur;
+import com.user.salestracking.R;
 
 import java.util.List;
 
@@ -20,10 +19,10 @@ import java.util.List;
  */
 
 //we need to extend the ArrayAdapter class as we are building an adapter
-public class VisitListAdapter extends ArrayAdapter<DataListVisit> {
+public class DonaturlistAdapter extends ArrayAdapter<DataDonatur> {
 
     //the list values in the List of type hero
-    List<DataListVisit> dataListVisits;
+    List<DataDonatur> donaturList;
 
     //activity context
     Context context;
@@ -32,11 +31,11 @@ public class VisitListAdapter extends ArrayAdapter<DataListVisit> {
     int resource;
 
     //constructor initializing the values
-    public VisitListAdapter(Context context, int resource, List<DataListVisit> dataListVisits) {
-        super(context, resource, dataListVisits);
+    public DonaturlistAdapter(Context context, int resource, List<DataDonatur> donaturList) {
+        super(context, resource, donaturList);
         this.context = context;
         this.resource = resource;
-        this.dataListVisits = dataListVisits;
+        this.donaturList = donaturList;
     }
 
     //this will return the ListView Item as a View
@@ -55,23 +54,22 @@ public class VisitListAdapter extends ArrayAdapter<DataListVisit> {
 //        ImageView imageView = view.findViewById(R.id.imageView);
         TextView textViewName = view.findViewById(R.id.tv_name);
         TextView alamat = view.findViewById(R.id.tv_alamat);
+        TextView email = view.findViewById(R.id.tv_email);
+        TextView JK = view.findViewById(R.id.tv_jk);
         TextView no_hp = view.findViewById(R.id.tv_noHp);
-        TextView date = view.findViewById(R.id.tv_date);
-        TextView registerBy = view.findViewById(R.id.tv_registeredBy);
 
         //getting the hero of the specified position
-        DataListVisit dataListVisit = dataListVisits.get(position);
+        DataDonatur donatur = donaturList.get(position);
 
         //adding values to the list item
 //        imageView.setImageDrawable(context.getResources().getDrawable(hero.getImage()));
-        textViewName.setText(dataListVisit.getName());
-        alamat.setText(dataListVisit.getAlamat());
-        no_hp.setText(dataListVisit.getNo_hp());
-        date.setText(dataListVisit.getDate_record());
-        registerBy.setText(dataListVisit.getAssign_by());
+        textViewName.setText(donatur.getName());
+        alamat.setText(donatur.getAlamat());
+        email.setText(donatur.getEmail());
+        JK.setText(donatur.getJenis_kelamin());
+        no_hp.setText(donatur.getNo_hp());
 
         //finally returning the view
         return view;
     }
 }
-

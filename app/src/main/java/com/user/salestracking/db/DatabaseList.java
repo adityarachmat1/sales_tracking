@@ -6,8 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.user.salestracking.DataDonatur;
-import com.user.salestracking.DataListCall;
+import com.user.salestracking.Data.DataListCall;
 
 import java.util.ArrayList;
 import java.util.List;

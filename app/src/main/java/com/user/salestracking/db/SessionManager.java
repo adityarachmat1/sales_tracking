@@ -1,4 +1,4 @@
-package com.user.salestracking;
+package com.user.salestracking.db;
 
 import android.content.Context;
 import android.content.SharedPreferences;

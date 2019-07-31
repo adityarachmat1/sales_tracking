@@ -4,10 +4,8 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -20,15 +18,12 @@ import android.widget.Toast;
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.user.salestracking.Api_Service.Api_url;
-import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.Data.DataSales;
 import com.user.salestracking.db.DatabaseHelperAkun;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.user.salestracking.db.SessionManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
@@ -74,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
                         Boolean isAvailable = false;
                             for (int i = 0; i < sales_list.size(); i++){
-                                if (sales_list.get(i).getEmail().toUpperCase().equals(et_email.getText().toString().toUpperCase()) && sales_list.get(i).getPassword().equals(et_password.getText().toString().toUpperCase())){
+                                if (sales_list.get(i).getEmail().toUpperCase().equals(et_email.getText().toString().toUpperCase()) && sales_list.get(i).getPassword().toUpperCase().equals(et_password.getText().toString().toUpperCase())){
                                     session.createLoginSession(String.valueOf(1),sales_list.get(i).getEmail(), sales_list.get(i).getName(), sales_list.get(i).getType_akun());
                                     isAvailable = true;
                                 }
@@ -120,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
         btn_sales.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                dialogCreate_akun("2");
+                dialogCreate_akun("3");
             }
         });
 

@@ -7,12 +7,10 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.TextInputLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -25,10 +23,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -49,24 +45,21 @@ import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.user.salestracking.Api_Service.Api_url;
-import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.Data.DataDonatur;
+import com.user.salestracking.Data.DataListCall;
+import com.user.salestracking.Data.DataSales;
 import com.user.salestracking.db.DatabaseHelper;
+import com.user.salestracking.db.DatabaseHelperAkun;
 import com.user.salestracking.db.DatabaseList;
+import com.user.salestracking.db.SessionManager;
+import com.user.salestracking.list_adapter.CallListAdapter;
 import com.user.salestracking.permission.PermissionsActivity;
 import com.user.salestracking.permission.PermissionsChecker;
 import com.user.salestracking.utils.FileUtils;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -115,12 +108,15 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
     private List<DataListCall> dataListCalls = new ArrayList<>();
     private Button btn_exportPDF;
     PermissionsChecker checker;
+    private DatabaseHelperAkun db_sales;
+    private List<DataSales> salesList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        db_sales = new DatabaseHelperAkun(this);
         db = new DatabaseHelper(this);
         db_list = new DatabaseList(this);
         mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
@@ -205,7 +201,12 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         Menu nav_Menu = navigationView.getMenu();
-        nav_Menu.findItem(R.id.create_akun).setVisible(false);
+
+        if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
+            nav_Menu.findItem(R.id.list_sales).setVisible(false);
+            nav_Menu.findItem(R.id.create_akun).setVisible(false);
+            nav_Menu.findItem(R.id.create_donatur).setVisible(false);
+        }
         navigationView.setNavigationItemSelectedListener(this);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -297,91 +298,41 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         finish();
     }
 
-    private void request() {
-        class RegisterUser extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                RequestHandler requestHandler = new RequestHandler();
-
-                return requestHandler.getRequest(Api_url.GET_LIST_VISIT);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                dialog.dismiss();
-                result(result);
-
-            }
-        }
-
-        RegisterUser ru = new RegisterUser();
-        ru.execute();
-    }
-
-    private void result(String result){
-        Log.d("result", result);
-        JSONObject jsonObject;
-        JSONArray jsonArray;
-        try {
-            jsonArray = new JSONArray(result);
-            for (int i = 0; i < jsonArray.length(); i++){
-                jsonObject = jsonArray.getJSONObject(i);
-
-//                if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("1")){
-//                    dataListVisits.add(new DataListVisit(
-//                            jsonObject.getString("nama"),
-//                            jsonObject.getString("email"),
-//                            jsonObject.getString("jenis_kelamin"),
-//                            jsonObject.getString("alamat"),
-//                            jsonObject.getString("no_hp"),
-//                            jsonObject.getString("aktivitas"),
-//                            jsonObject.getString("hasil_aktivitas"),
-//                            jsonObject.getString("catatan"),
-//                            jsonObject.getString("type_aktivitas"),
-//                            jsonObject.getString("date_record"),
-//                            jsonObject.getString("assign_by")));
-//                    VisitListAdapter adapter = new VisitListAdapter(this, R.layout.row_data_visit, dataListVisits);
-//                    listView.setAdapter(adapter);
-//                }else {
-                    if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
-//                        dataListVisits.add(new DataListVisit(
-//                                jsonObject.getString("nama"),
-//                                jsonObject.getString("email"),
-//                                jsonObject.getString("jenis_kelamin"),
-//                                jsonObject.getString("alamat"),
-//                                jsonObject.getString("no_hp"),
-//                                jsonObject.getString("aktivitas"),
-//                                jsonObject.getString("hasil_aktivitas"),
-//                                jsonObject.getString("catatan"),
-//                                jsonObject.getString("type_aktivitas"),
-//                                jsonObject.getString("date_record"),
-//                                jsonObject.getString("assign_by")));
-//                        VisitListAdapter adapter = new VisitListAdapter(this, R.layout.row_data_visit, dataListVisits);
-//                        listView.setAdapter(adapter);
-//                    }
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void dialogAboutUs() {
         dialogs = new AlertDialog.Builder(List_visit.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_about_us, null);
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
+
+        dialogs.show();
+    }
+
+    private void dialogPilih_akun() {
+        dialogs = new AlertDialog.Builder(List_visit.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.dialog_pilih_akun, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
+
+
+        Button btn_admin = (Button) dialogView.findViewById(R.id.btn_admin);
+
+        btn_admin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                dialogCreate_akun("1");
+            }
+        });
+
+        Button btn_sales = (Button) dialogView.findViewById(R.id.btn_sales);
+
+        btn_sales.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                dialogCreate_akun("3");
+            }
+        });
 
         dialogs.show();
     }
@@ -416,57 +367,25 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         dialogs.show();
     }
 
-//    private void dialogCreate_donatur() {
-//        dialogs = new AlertDialog.Builder(this);
-//        inflater = getLayoutInflater();
-//        dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
-//        dialogs.setView(dialogView);
-//        dialogs.setCancelable(true);
-//
-//        final String url = Api_url.URL_EDIT_DONATUR;
-//
-//        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
-//        txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
-//        final EditText txt_alamat = (EditText) dialogView.findViewById(R.id.txt_alamat);
-//        final EditText txt_email = (EditText) dialogView.findViewById(R.id.txt_email);
-//        tgl_lahir = (TextView) dialogView.findViewById(R.id.txt_tgl_lahir);
-//        txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
-//        TextView txt_title = (TextView)dialogView.findViewById(R.id.txt_title);
-//        txt_title.setText("CREATE DONATUR");
-//
-//        tgl_lahir.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(final View v) {
-//                showCalendar_edit();
-//            }
-//        });
-//
-//        btn_save = (Button) dialogView.findViewById(R.id.btn_save);
-//        btn_save.setText("CREATE");
-//        btn_save.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(final View v) {
-//                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
-//                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
-//                }else {
-//                    request_create(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-//                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
-//                }
-//
-//            }
-//        });
-//
-//        dialogs.show();
-//    }
-
-    private void dialogCreate_akun() {
-        dialogs = new AlertDialog.Builder(this);
+    private void dialogCreate_akun(String type_account) {
+        dialogs = new AlertDialog.Builder(List_visit.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
-        final String url = Api_url.URL_EDIT_DONATUR;
+        final String url = Api_url.URL_CREATE_ACCOUNT;
+
+        String type = null;
+        String type_desc = null;
+
+        if (type_account.equals("1")){
+            type = "1";
+            type_desc = "Admin";
+        }else {
+            type = "3";
+            type_desc = "Sales Marketing";
+        }
 
         final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
         txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
@@ -480,7 +399,9 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         LinearLayout ln_password = (LinearLayout) dialogView.findViewById(R.id.ln_password);
         LinearLayout ln_cabang = (LinearLayout) dialogView.findViewById(R.id.ln_cabang);
         ln_password.setVisibility(View.VISIBLE);
-        ln_cabang.setVisibility(View.VISIBLE);
+//        ln_cabang.setVisibility(View.VISIBLE);
+        final EditText txt_password = (EditText) dialogView.findViewById(R.id.txt_password);
+        final EditText txt_cabang = (EditText) dialogView.findViewById(R.id.txt_cabang);
 
         tgl_lahir.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -493,15 +414,20 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         btn_save = (Button) dialogView.findViewById(R.id.btn_save);
         btn_save.setText("CREATE");
 
+        final String finalType = type;
+        final String finalType_desc = type_desc;
+
+        final String finalType1 = type;
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") ||
+                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
-                    request_create(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
+                    createSales(txt_nama.getText().toString(), finalType1,txt_email.getText().toString(), txt_password.getText().toString(),String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());
                 }
+
 
             }
         });
@@ -591,67 +517,6 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
         cdp.show((getSupportFragmentManager()),"Promise Date");
     }
 
-    private void request_create(final String nama, final String email, final String alamat, final String jenis_kelamin, final String tanggal_lahir,
-                                      final String noHp,final String url,final String id) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                Date c = Calendar.getInstance().getTime();
-                System.out.println("Current time => " + c);
-
-                @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy HH:mm");
-                String formattedDate = df.format(c);
-
-                //creating request parameters
-                HashMap<String, String> params = new HashMap<>();
-                params.put("nama", nama);
-                params.put("email", email);
-                params.put("alamat", alamat);
-                params.put("jenis_kelamin", jenis_kelamin);
-                params.put("nomor_hanphone", noHp);
-                params.put("tgl_lahir", tanggal_lahir);
-                params.put("id", id);
-                //returing the response
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Log.d("result", result);
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        popup_success(obj.getString("message"));
-                    } else {
-                        popup_failed(obj.getString("message"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        insert_call ru = new insert_call();
-        ru.execute();
-    }
-
-
     private void popup_success(String message){
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(this);
@@ -693,6 +558,11 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             drawer.closeDrawers();
             finish();
 
+        }else if (id == R.id.list_sales) {
+            startActivity(new Intent(List_visit.this, List_Sales.class));
+            drawer.closeDrawers();
+            finish();
+
         }else if (id == R.id.list_call) {
             startActivity(new Intent(List_visit.this, List_Call.class));
             drawer.closeDrawers();
@@ -715,7 +585,7 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             dialogCreate_donatur();
 
         } else if (id == R.id.create_akun) {
-            dialogCreate_akun();
+            dialogPilih_akun();
 
 
         } else if (id == R.id.list_donatur) {
@@ -980,6 +850,35 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             createPdf(FileUtils.getAppPath(List_visit.this) + "DataListVisit.pdf");
         } else {
             Toast.makeText(List_visit.this, "Permission not granted, Try again!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void createSales(String name, String type, String email,String Password, String jk, String alamat, String no_hp, String tgl_lahir) {
+        long id = db_sales.insertDonatur(name, type, email,Password, jk, alamat, no_hp, tgl_lahir);
+
+        // get the newly inserted note from db
+        DataSales n = db_sales.getDonatur(id);
+
+        if (n != null) {
+            // adding new note to array list at 0 position
+            salesList.add(0, n);
+
+            // refreshing the list
+            AlertDialog.Builder builder;
+            builder = new AlertDialog.Builder(this);
+            builder.setMessage("success")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(getApplicationContext(), Dashboard_activity.class);
+                            startActivity(intent);
+                            finish();
+
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+
         }
     }
 

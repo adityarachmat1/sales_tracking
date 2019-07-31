@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -30,8 +29,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,31 +46,27 @@ import android.widget.Toast;
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
 import com.user.salestracking.Api_Service.Api_url;
-import com.user.salestracking.Api_Service.RequestHandler;
+import com.user.salestracking.Data.DataDonatur;
+import com.user.salestracking.Data.DataListCall;
+import com.user.salestracking.Data.DataListClosing;
+import com.user.salestracking.Data.DataSales;
 import com.user.salestracking.db.DatabaseClosing;
 import com.user.salestracking.db.DatabaseHelper;
 import com.user.salestracking.db.DatabaseHelperAkun;
 import com.user.salestracking.db.DatabaseList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
+import com.user.salestracking.db.SessionManager;
+import com.user.salestracking.list_adapter.DonaturlistAdapter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -81,9 +74,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SessionManager session;
@@ -101,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private List<DataListClosing> databaseClosings = new ArrayList<DataListClosing>();
     private List<DataListCall> databaseLists = new ArrayList<DataListCall>();
     private List<DataDonatur> donaturList = new ArrayList<>();
-    private List<DataSales> salesList = new ArrayList<>();
+
 
     private NavigationView navigationView;
     private DrawerLayout drawer;
@@ -142,10 +132,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String imageFilePath;
     private MediaPlayer mediaPlayer;
     private DatabaseHelper db;
-    private DatabaseHelperAkun db_sales;
     private DatabaseList db_list;
     private DatabaseClosing db_closing;
     private DonaturlistAdapter adapter;
+    private DatabaseHelperAkun db_sales;
+    private List<DataSales> salesList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -244,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        nav_Menu.findItem(R.id.create_akun).setVisible(false);
 
         if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
-
+            nav_Menu.findItem(R.id.list_sales).setVisible(false);
             nav_Menu.findItem(R.id.create_akun).setVisible(false);
             nav_Menu.findItem(R.id.create_donatur).setVisible(false);
         }
@@ -284,6 +275,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (id == R.id.dashboard) {
             startActivity(new Intent(MainActivity.this, Dashboard_activity.class));
+            drawer.closeDrawers();
+            finish();
+
+        }else if (id == R.id.list_sales) {
+            startActivity(new Intent(MainActivity.this, List_Sales.class));
             drawer.closeDrawers();
             finish();
 
@@ -799,7 +795,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
 //                }
                 if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") ||
-                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+                        tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
                     Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
                 }else {
                     createNote(txt_nama.getText().toString(),txt_email.getText().toString(), String.valueOf(spinner.getSelectedItem()), txt_alamat.getText().toString(), txt_noHp.getText().toString(), tgl_lahir.getText().toString());
@@ -833,7 +829,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_sales.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                dialogCreate_akun("2");
+                dialogCreate_akun("3");
             }
         });
 

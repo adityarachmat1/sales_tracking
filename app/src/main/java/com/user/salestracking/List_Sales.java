@@ -1,11 +1,12 @@
 package com.user.salestracking;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -21,60 +22,67 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.calendardatepicker.MonthAdapter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.user.salestracking.Api_Service.Api_url;
-import com.user.salestracking.Api_Service.RequestHandler;
 import com.user.salestracking.Data.DataDonatur;
-import com.user.salestracking.Data.DataListCall;
-import com.user.salestracking.Data.DataListClosing;
-import com.user.salestracking.Data.DataListVisit;
 import com.user.salestracking.Data.DataSales;
-import com.user.salestracking.db.DatabaseClosing;
 import com.user.salestracking.db.DatabaseHelper;
 import com.user.salestracking.db.DatabaseHelperAkun;
 import com.user.salestracking.db.DatabaseList;
 import com.user.salestracking.db.SessionManager;
-import com.user.salestracking.list_adapter.DonaturlistAdapter;
+import com.user.salestracking.list_adapter.SalesListAdapter;
+import com.user.salestracking.permission.PermissionsActivity;
+import com.user.salestracking.permission.PermissionsChecker;
+import com.user.salestracking.utils.FileUtils;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class Dashboard_activity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import static com.user.salestracking.permission.PermissionsActivity.PERMISSION_REQUEST_CODE;
+import static com.user.salestracking.permission.PermissionsChecker.REQUIRED_PERMISSION;
+
+public class List_Sales extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SessionManager session;
     private HashMap<String, String> user;
-    List<DataDonatur> donatur_list;
+    private ListView listView;
     AlertDialog.Builder dialogs;
     private ProgressDialog dialog;
     LayoutInflater inflater;
-    TextView txt_nama, txt_email, txt_alamat, txt_jk, txt_noHp;
-    EditText txt_catatan, txt_nominal;
-    TextView txt_tgl_pembayaran, tgl_lahir, tv_total_call, tv_total_visit, tv_total_closing;
-    Button btn_call, btn_visit, btn_closing, btn_save, btn_edit;
+    TextView txt_nama, txt_email, txt_alamat, txt_jk, txt_noHp, txt_catatan;
+    TextView txt_tgl_pembayaran, tgl_lahir;
+    Button btn_call, btn_visit, btn_closing, btn_save;
     View dialogView;
-    LinearLayout ln_call, ln_visit, ln_close;
 
-    ArrayList<String>call_aray = new ArrayList<>();
-    ArrayList<String>visit_aray= new ArrayList<>();
-    ArrayList<String>close_aray = new ArrayList<>();
-
-    List<DataListCall> dataListCall;
-    List<DataListClosing> dataListClosing;
-    List<DataListVisit> dataListVisits;
+    PermissionsChecker checker;
 
     private NavigationView navigationView;
     private DrawerLayout drawer;
@@ -82,38 +90,43 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
     private TextView txtName, txtCabang, txtType;
     private Toolbar toolbar;
 
+    public static int navItemIndex = 0;
 
     private String[] activityTitles;
 
     private boolean shouldLoadHomeFragOnBackPress = true;
     private Handler mHandler;
-    private MediaPlayer mediaPlayer;
-    private DatabaseHelper db;
-    private DonaturlistAdapter adapter;
-    private List<DataDonatur> donaturList = new ArrayList<>();
-    private DatabaseList db_list;
-    private DatabaseClosing db_closing;
-    private DatabaseHelperAkun db_sales;
-    private List<DataSales> salesList = new ArrayList<>();
 
+    private String[] pay = {
+            "Transfer",
+            "Cash"
+    };
+    private MediaPlayer mediaPlayer;
+    private SalesListAdapter adapter;
+    private DatabaseHelper db;
+    private DatabaseHelperAkun db_sales;
+    private DatabaseList db_list;
+    private List<DataDonatur> donaturList = new ArrayList<>();
+    private List<DataSales> dataSales = new ArrayList<>();
+    private Button btn_exportPDF;
+    private List<DataSales> salesList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dashboard_main);
+        setContentView(R.layout.activity_main);
 
         db_sales = new DatabaseHelperAkun(this);
         db = new DatabaseHelper(this);
         db_list = new DatabaseList(this);
-        db_closing = new DatabaseClosing(this);
         mediaPlayer = MediaPlayer.create(this, R.raw.audio1);
-        call_aray.clear();
-        visit_aray.clear();
-        close_aray.clear();
+        setTitle("Sales Tracking");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        btn_exportPDF = (Button) findViewById(R.id.btn_export);
+        btn_exportPDF.setVisibility(View.GONE);
 
         findViewById(R.id.drawer_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,10 +140,11 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
                     drawer.openDrawer(GravityCompat.END);
             }
         });
+        checker = new PermissionsChecker(this);
 
         mHandler = new Handler();
-        dialog = new ProgressDialog(Dashboard_activity.this);
-        donatur_list = new ArrayList<>();
+        dialog = new ProgressDialog(List_Sales.this);
+        dataSales = new ArrayList<>();
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
 
@@ -138,43 +152,13 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         txtName = (TextView) navHeader.findViewById(R.id.name);
         txtCabang = (TextView) navHeader.findViewById(R.id.website);
         txtType = (TextView) navHeader.findViewById(R.id.type);
-
-        tv_total_call = (TextView) findViewById(R.id.tv_total_call);
-        tv_total_visit = (TextView) findViewById(R.id.tv_total_visit);
-        tv_total_closing = (TextView) findViewById(R.id.tv_total_close);
-
-        ln_call = (LinearLayout) findViewById(R.id.ln_call_dashboard);
-        ln_visit = (LinearLayout) findViewById(R.id.ln_visit_dashboard);
-        ln_close = (LinearLayout) findViewById(R.id.ln_closing_dashboard);
-
-        ln_call.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Dashboard_activity.this, List_Call.class));
-                finish();
-            }
-        });
-
-        ln_visit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Dashboard_activity.this, List_visit.class));
-                finish();
-            }
-        });
-
-        ln_close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Dashboard_activity.this, List_closing.class));
-                finish();
-            }
-        });
-
-
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        TextView txtTitle = (TextView) findViewById(R.id.title);
+        txtTitle.setText("LIST SALES");
 
         activityTitles = getResources().getStringArray(R.array.nav_item_activity_titles);
+
+//        setUpNavigationView();
+        listView = (ListView) findViewById(R.id.list_view);
 
         session = new SessionManager(getApplicationContext());
         user = session.getUserDetails();
@@ -191,11 +175,25 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         }else {
             txtType.setText("Owner");
         }
-//        request_call();
+//        request();
+        if (db_sales.getAllDonatur() != null){
+            for (int i = 0; i < db_sales.getAllDonatur().size(); i++){
+                if (db_sales.getAllDonatur().get(i).getType_akun().equals("3")){
+                    dataSales.add(db_sales.getAllDonatur().get(i));
+                }
+            }
+        }
 
-        tv_total_call.setText(""+db_list.getAllDonatur().size());
-        tv_total_visit.setText(""+db_list.getAllDonatur_visit().size());
-        tv_total_closing.setText(""+db_closing.getAllDonatur().size());
+        adapter = new SalesListAdapter(this, R.layout.row_data_call, dataSales);
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                dialogFormDetail(position);
+            }
+        });
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -209,29 +207,30 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         Menu nav_Menu = navigationView.getMenu();
 
         if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
-            nav_Menu.findItem(R.id.list_sales).setVisible(false);
+
             nav_Menu.findItem(R.id.create_akun).setVisible(false);
+            nav_Menu.findItem(R.id.list_sales).setVisible(false);
             nav_Menu.findItem(R.id.create_donatur).setVisible(false);
         }
-
         navigationView.setNavigationItemSelectedListener(this);
 
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.list_call:
-                        Intent intent = new Intent(Dashboard_activity.this,List_Call.class);
+                        Intent intent = new Intent(List_Sales.this,List_Call.class);
                         startActivity(intent);
                         finish();
                         break;
                     case R.id.list_visit:
-                        Intent intent1 = new Intent(Dashboard_activity.this,List_visit.class);
+                        Intent intent1 = new Intent(List_Sales.this,List_visit.class);
                         startActivity(intent1);
                         finish();
                         break;
                     case R.id.list_closing:
-                        Intent intent2 = new Intent(Dashboard_activity.this,List_closing.class);
+                        Intent intent2 = new Intent(List_Sales.this,List_closing.class);
                         startActivity(intent2);
                         finish();
                         break;
@@ -239,66 +238,21 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
                 return false;
             }
         });
+
+        btn_exportPDF.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (checker.lacksPermissions(REQUIRED_PERMISSION)) {
+                    PermissionsActivity.startActivityForResult(List_Sales.this, PERMISSION_REQUEST_CODE, REQUIRED_PERMISSION);
+                } else {
+                    if (dataSales.size() > 0){
+                        createPdf(FileUtils.getAppPath(List_Sales.this) + "DataListSales.pdf");
+                    }else {
+                        Toast.makeText(List_Sales.this, "List Call Kosong", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
     }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.dashboard) {
-            startActivity(new Intent(Dashboard_activity.this, Dashboard_activity.class));
-            drawer.closeDrawers();
-            finish();
-
-        }else if (id == R.id.list_sales) {
-            startActivity(new Intent(Dashboard_activity.this, List_Sales.class));
-            drawer.closeDrawers();
-            finish();
-
-
-        }else if (id == R.id.list_call) {
-            startActivity(new Intent(Dashboard_activity.this, List_Call.class));
-            drawer.closeDrawers();
-            finish();
-
-        } else if (id == R.id.list_visit) {
-            startActivity(new Intent(Dashboard_activity.this, List_visit.class));
-            drawer.closeDrawers();
-            finish();
-        } else if (id == R.id.list_closing) {
-            startActivity(new Intent(Dashboard_activity.this, List_closing.class));
-            drawer.closeDrawers();
-            finish();
-
-        } else if (id == R.id.nav_about_us) {
-            dialogAboutUs();
-
-        } else if (id == R.id.create_donatur) {
-            dialogCreate_donatur();
-
-        } else if (id == R.id.create_akun) {
-            dialogPilih_akun();
-
-        } else if (id == R.id.list_donatur) {
-            startActivity(new Intent(Dashboard_activity.this, MainActivity.class));
-            drawer.closeDrawers();
-            finish();
-
-        } else if (id == R.id.logout) {
-            mediaPlayer.start();
-            popup();
-            return true;
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.END);
-        return true;
-    }
-
-    ///////////////// ALERT DIALOG ///////////////////
-
     private void popup(){
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(this);
@@ -342,38 +296,6 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         alert.show();
     }
 
-    private void popup_success(String message){
-        AlertDialog.Builder builder;
-        builder = new AlertDialog.Builder(this);
-        builder.setMessage(message)
-                .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent(Dashboard_activity.this, Dashboard_activity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    private void popup_failed(String message){
-        AlertDialog.Builder builder;
-        builder = new AlertDialog.Builder(this);
-        builder.setMessage(message)
-                .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    ///////////////// ALERT DIALOG /////////////////
-
     private void logout(){
         session.logoutUser();
         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
@@ -381,51 +303,8 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         finish();
     }
 
-//    private void dialogCreate_donatur() {
-//        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
-//        inflater = getLayoutInflater();
-//        dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
-//        dialogs.setView(dialogView);
-//        dialogs.setCancelable(true);
-//
-//        final String url = Api_url.URL_CREATE_DONATUR;
-//
-//        final Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner1);
-//        txt_nama    = (EditText) dialogView.findViewById(R.id.txt_nama);
-//        final EditText txt_alamat = (EditText) dialogView.findViewById(R.id.txt_alamat);
-//        final EditText txt_email = (EditText) dialogView.findViewById(R.id.txt_email);
-//        tgl_lahir = (TextView) dialogView.findViewById(R.id.txt_tgl_lahir);
-//        txt_noHp  = (EditText) dialogView.findViewById(R.id.txt_noHp);
-//        TextView txt_title = (TextView)dialogView.findViewById(R.id.txt_title);
-//        txt_title.setText("CREATE DONATUR");
-//
-//        tgl_lahir.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(final View v) {
-//                showCalendar_edit();
-//            }
-//        });
-//
-//        btn_save = (Button) dialogView.findViewById(R.id.btn_save);
-//        btn_save.setText("CREATE");
-//        btn_save.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(final View v) {
-//                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
-//                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
-//                }else {
-//                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-//                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, "");
-//                }
-//
-//            }
-//        });
-//
-//        dialogs.show();
-//    }
-
     private void dialogPilih_akun() {
-        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
+        dialogs = new AlertDialog.Builder(List_Sales.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_pilih_akun, null);
         dialogs.setView(dialogView);
@@ -454,7 +333,7 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
     }
 
     private void dialogAboutUs() {
-        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
+        dialogs = new AlertDialog.Builder(List_Sales.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_about_us, null);
         TextView txt_about = (TextView) dialogView.findViewById(R.id.txt_about);
@@ -477,8 +356,50 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         dialogs.show();
     }
 
+    private void dialogFormDetail(final int pos) {
+        dialogs = new AlertDialog.Builder(List_Sales.this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.dialog_detail_call, null);
+        dialogs.setView(dialogView);
+        dialogs.setCancelable(true);
+
+        txt_nama    = (TextView) dialogView.findViewById(R.id.tv_name);
+        txt_email  = (TextView) dialogView.findViewById(R.id.tv_email);
+        txt_alamat  = (TextView) dialogView.findViewById(R.id.tv_alamat);
+        TextView tv_noHp = (TextView) dialogView.findViewById(R.id.tv_noHp);
+        TextView tv_noted = (TextView) dialogView.findViewById(R.id.tv_note);
+        TextView tv_aktivitas = (TextView) dialogView.findViewById(R.id.tv_aktivitas);
+        TextView tv_hsl_aktivitas = (TextView) dialogView.findViewById(R.id.tv_hsl_aktivitas);
+        TextView tv_date = (TextView) dialogView.findViewById(R.id.tv_date);
+        TextView tv_registeredBy = (TextView) dialogView.findViewById(R.id.tv_registeredBy);
+
+        TextView tv_title_aktivitas = (TextView) dialogView.findViewById(R.id.tv_title_hasil_aktivitas);
+        TextView tve_aktivitas = (TextView) dialogView.findViewById(R.id.tv_title_aktivitas);
+        ImageView imageNote = (ImageView) dialogView.findViewById(R.id.imageView7);
+        tve_aktivitas.setText("DATA SALES");
+        tv_title_aktivitas.setVisibility(View.GONE);
+        imageNote.setVisibility(View.GONE);
+
+        txt_nama.setText(dataSales.get(pos).getName());
+        txt_email.setText(dataSales.get(pos).getEmail());
+        txt_alamat.setText(dataSales.get(pos).getAlamat());
+        tv_noHp.setText(dataSales.get(pos).getNo_hp());
+        tv_noted.setVisibility(View.GONE);
+        tv_aktivitas.setVisibility(View.GONE);
+        tv_hsl_aktivitas.setVisibility(View.GONE);
+        tv_date.setVisibility(View.GONE);
+        tv_registeredBy.setVisibility(View.GONE);
+//        tv_noted.setText(dataListCall.get(pos).getCatatan());
+//        tv_aktivitas.setText(dataListCall.get(pos).getAktivitas());
+//        tv_hsl_aktivitas.setText(dataListCall.get(pos).getHasil_aktivitas());
+//        tv_date.setText(dataListCall.get(pos).getDate_record());
+//        tv_registeredBy.setText(dataListCall.get(pos).getAssign_by());
+
+        dialogs.show();
+    }
+
     private void dialogCreate_akun(String type_account) {
-        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
+        dialogs = new AlertDialog.Builder(List_Sales.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
         dialogs.setView(dialogView);
@@ -509,7 +430,7 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         LinearLayout ln_password = (LinearLayout) dialogView.findViewById(R.id.ln_password);
         LinearLayout ln_cabang = (LinearLayout) dialogView.findViewById(R.id.ln_cabang);
         ln_password.setVisibility(View.VISIBLE);
-        ln_cabang.setVisibility(View.GONE);
+//        ln_cabang.setVisibility(View.VISIBLE);
         final EditText txt_password = (EditText) dialogView.findViewById(R.id.txt_password);
         final EditText txt_cabang = (EditText) dialogView.findViewById(R.id.txt_cabang);
 
@@ -543,6 +464,47 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         });
 
         dialogs.show();
+    }
+
+    public void showCalendar() {
+        Calendar calendar = Calendar.getInstance();
+        MonthAdapter.CalendarDay currDate = new MonthAdapter.CalendarDay();
+
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        currDate.setDay(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
+        CalendarDatePickerDialogFragment cdp = new CalendarDatePickerDialogFragment()
+                .setOnDateSetListener(new CalendarDatePickerDialogFragment.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(CalendarDatePickerDialogFragment dialog, int year, int monthOfYear, int dayOfMonth) {
+                        int month = monthOfYear+1;
+                        String date = "";
+                        if (dayOfMonth < 10){
+                            if (month < 10){
+                                date = "0"+dayOfMonth+"-"+"0"+month+"-"+year;
+                            }else {
+                                date = "0"+dayOfMonth+"-"+month+"-"+year;
+                            }
+                        }else {
+                            if (month < 10){
+                                date = dayOfMonth+"-"+"0"+month+"-"+year;
+                            }else {
+                                date = dayOfMonth+"-"+month+"-"+year;
+                            }
+                        }
+                        txt_tgl_pembayaran.setText(date);
+
+                    }
+                })
+                .setFirstDayOfWeek(Calendar.SUNDAY)
+                .setPreselectedDate(year, month, day)
+                .setDateRange(null, null)
+                .setDoneText("Yes")
+                .setThemeLight()
+                .setCancelText("Cancel");
+        cdp.show((getSupportFragmentManager()),"Promise Date");
     }
 
     public void showCalendar_edit() {
@@ -586,227 +548,94 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         cdp.show((getSupportFragmentManager()),"Promise Date");
     }
 
-    ////////////////////// DIALOG ////////////////////////////
 
-    /////////////// REQUEST SERVICE ////////////////////////////
-
-    private void request_call() {
-        class RegisterUser extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                RequestHandler requestHandler = new RequestHandler();
-
-                return requestHandler.getRequest(Api_url.GET_LIST_CALL);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                dialog.dismiss();
-                result_call(result);
-
-            }
-        }
-
-        RegisterUser ru = new RegisterUser();
-        ru.execute();
-    }
-
-    private void result_call(String result){
-        Log.d("result", result);
-        JSONObject jsonObject;
-        JSONArray jsonArray;
-        try {
-            jsonArray = new JSONArray(result);
-            for (int i = 0; i < jsonArray.length(); i++){
-                jsonObject = jsonArray.getJSONObject(i);
-                    if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
-                        call_aray.add(jsonObject.getString("nama"));
-                }
-            }
-            request_visit();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void request_visit() {
-        class RegisterUser extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                RequestHandler requestHandler = new RequestHandler();
-
-                return requestHandler.getRequest(Api_url.GET_LIST_VISIT);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                dialog.dismiss();
-                result_visit(result);
-
-            }
-        }
-
-        RegisterUser ru = new RegisterUser();
-        ru.execute();
-    }
-
-    private void result_visit(String result){
-        Log.d("result", result);
-        JSONObject jsonObject;
-        JSONArray jsonArray;
-        try {
-            jsonArray = new JSONArray(result);
-            for (int i = 0; i < jsonArray.length(); i++){
-                jsonObject = jsonArray.getJSONObject(i);
-                    if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
-                        visit_aray.add(jsonObject.getString("nama"));
+    private void popup_success(String message){
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(List_Sales.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                     }
-                }
-                request_closing();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
-    private void request_closing() {
-        class RegisterUser extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                RequestHandler requestHandler = new RequestHandler();
-
-                return requestHandler.getRequest(Api_url.GET_LIST_CLOSING);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                dialog.dismiss();
-                result_closing(result);
-
-            }
-        }
-
-        RegisterUser ru = new RegisterUser();
-        ru.execute();
-    }
-
-    private void result_closing(String result){
-        Log.d("result", result);
-        JSONObject jsonObject;
-        JSONArray jsonArray;
-        try {
-            jsonArray = new JSONArray(result);
-            for (int i = 0; i < jsonArray.length(); i++){
-                jsonObject = jsonArray.getJSONObject(i);
-                    if (jsonObject.getString("assign_by").equals(user.get(SessionManager.KEY_NAMA))){
-                        close_aray.add(jsonObject.getString("nama"));
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        if (call_aray.isEmpty()){
-            tv_total_call.setText("0");
-        }else {
-            tv_total_call.setText(call_aray.size()+"");
-        }
-
-        if (visit_aray.isEmpty()){
-            tv_total_visit.setText("0");
-        }else {
-            tv_total_visit.setText(visit_aray.size()+"");
-        }
-
-        if (close_aray.isEmpty()){
-            tv_total_closing.setText("0");
-        }else {
-            tv_total_closing.setText(close_aray.size()+"");
-        }
-
-    }
-
-    private void request_Edit_donatur(final String nama, final String email, final String alamat, final String jenis_kelamin, final String tanggal_lahir,
-                                      final String noHp,final String url,final String id) {
-        class insert_call extends AsyncTask<Void, Void, String> {
-
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
-
-                HashMap<String, String> params = new HashMap<>();
-                params.put("nama", nama);
-                params.put("email", email);
-                params.put("alamat", alamat);
-                params.put("jenis_kelamin", jenis_kelamin);
-                params.put("nomor_hanphone", noHp);
-                params.put("tgl_lahir", tanggal_lahir);
-                params.put("id", id);
-                //returing the response
-                return requestHandler.sendPostRequest(url, params);
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                //displaying the progress bar while user registers on the server
-                dialog.setMessage("please wait...");
-                dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Log.d("result", result);
-                dialog.dismiss();
-
-                try {
-                    JSONObject obj = new JSONObject(result);
-                    if (obj.getInt("status") == 0) {
-                        popup_success(obj.getString("message"));
-                    } else {
-                        popup_failed(obj.getString("message"));
+    private void popup_failed(String message){
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.dashboard) {
+            startActivity(new Intent(List_Sales.this, Dashboard_activity.class));
+            drawer.closeDrawers();
+            finish();
+
+        }else if (id == R.id.list_sales) {
+            startActivity(new Intent(List_Sales.this, List_Sales.class));
+            drawer.closeDrawers();
+            finish();
+
+        }else if (id == R.id.list_call) {
+            startActivity(new Intent(List_Sales.this, List_Call.class));
+            drawer.closeDrawers();
+            finish();
+
+        } else if (id == R.id.list_visit) {
+            startActivity(new Intent(List_Sales.this, List_visit.class));
+            drawer.closeDrawers();
+            finish();
+
+        } else if (id == R.id.list_closing) {
+            startActivity(new Intent(List_Sales.this, List_closing.class));
+            drawer.closeDrawers();
+            finish();
+
+        } else if (id == R.id.nav_about_us) {
+            dialogAboutUs();
+
+        } else if (id == R.id.create_donatur) {
+            dialogCreate_donatur();
+
+        } else if (id == R.id.create_akun) {
+            dialogPilih_akun();
+
+
+        } else if (id == R.id.list_donatur) {
+            startActivity(new Intent(List_Sales.this, MainActivity.class));
+            drawer.closeDrawers();
+            finish();
+
+        } else if (id == R.id.logout) {
+            mediaPlayer.start();
+            popup();
+            return true;
         }
 
-        insert_call ru = new insert_call();
-        ru.execute();
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.END);
+        return true;
     }
+
     private void createNote(String name, String email, String jk, String alamat, String no_hp, String tgl_lahir) {
         long id = db.insertDonatur(name, email, jk, alamat, no_hp, tgl_lahir);
 
@@ -862,7 +691,7 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
     }
 
     private void dialogCreate_donatur() {
-        dialogs = new AlertDialog.Builder(Dashboard_activity.this);
+        dialogs = new AlertDialog.Builder(List_Sales.this);
         inflater = getLayoutInflater();
         dialogView = inflater.inflate(R.layout.dialog_edit_donatur, null);
         dialogs.setView(dialogView);
@@ -902,6 +731,150 @@ public class Dashboard_activity extends AppCompatActivity implements NavigationV
         });
 
         dialogs.show();
+    }
+
+    public void createPdf(String dest) {
+
+        if (new File(dest).exists()) {
+            new File(dest).delete();
+        }
+
+        try {
+            /**
+             * Creating Document
+             */
+            Document document = new Document();
+
+            // Location to save
+            PdfWriter.getInstance(document, new FileOutputStream(dest));
+
+            // Open to write
+            document.open();
+
+            // Document Settings
+            document.setPageSize(PageSize.A4);
+            document.addCreationDate();
+            document.addAuthor("Android");
+            document.addCreator("Sales Tracking");
+
+            /***
+             * Variables for further use....
+             */
+            BaseColor mColorAccent = new BaseColor(0, 153, 204, 255);
+            float mHeadingFontSize = 16.0f;
+            float mValueFontSize = 20.0f;
+
+            /**
+             * How to USE FONT....
+             */
+            BaseFont urName = BaseFont.createFont("assets/fonts/brandon_medium.otf", "UTF-8", BaseFont.EMBEDDED);
+
+            // LINE SEPARATOR
+            LineSeparator lineSeparator = new LineSeparator();
+            lineSeparator.setLineColor(new BaseColor(0, 0, 0, 68));
+
+
+            Font mOrderDetailsTitleFont = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunk = new Chunk("Sales Tracking", mOrderDetailsTitleFont);
+            Paragraph mOrderDetailsTitleParagraph = new Paragraph(mOrderDetailsTitleChunk);
+            mOrderDetailsTitleParagraph.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagraph);
+
+            Font mOrderDetailsTitleFonta = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunka = new Chunk("Data List Call", mOrderDetailsTitleFonta);
+            Paragraph mOrderDetailsTitleParagrapha = new Paragraph(mOrderDetailsTitleChunka);
+            mOrderDetailsTitleParagrapha.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagrapha);
+
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+            document.add(new Chunk(lineSeparator));
+
+            document.add(new Chunk("\n"));
+
+            for(int i = 0; i < dataSales.size(); i++){
+
+                int o = i + 1;
+                Font mOrderIdFontc = new Font(urName, mHeadingFontSize, Font.NORMAL, mColorAccent);
+                Chunk mOrderIdChunkc = new Chunk(""+o+".", mOrderIdFontc);
+                Paragraph mOrderIdParagraphc = new Paragraph(mOrderIdChunkc);
+                document.add(mOrderIdParagraphc);
+
+
+                Font mOrderIdFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderIdChunk = new Chunk("Nama Donatur: "+ dataSales.get(i).getName(), mOrderIdFont);
+                Paragraph mOrderIdParagraph = new Paragraph(mOrderIdChunk);
+                document.add(mOrderIdParagraph);
+
+                Font mOrderAcNameFonta = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderAcNameChunka = new Chunk("Email: "+ dataSales.get(i).getEmail(), mOrderAcNameFonta);
+                Paragraph mOrderAcNameParagrapha = new Paragraph(mOrderAcNameChunka);
+                document.add(mOrderAcNameParagrapha);
+
+                Font mOrderDateFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderDateChunk = new Chunk("Alamat: "+ dataSales.get(i).getAlamat(), mOrderDateFont);
+                Paragraph mOrderDateParagraph = new Paragraph(mOrderDateChunk);
+                document.add(mOrderDateParagraph);
+
+                Font mOrderDateValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Chunk mOrderDateValueChunk = new Chunk("No. Hp : "+ dataSales.get(i).getNo_hp(), mOrderDateValueFont);
+                Paragraph mOrderDateValueParagraph = new Paragraph(mOrderDateValueChunk);
+                document.add(mOrderDateValueParagraph);
+
+
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+                document.add(new Chunk(lineSeparator));
+            }
+
+            Date c = Calendar.getInstance().getTime();
+
+            document.add(new Chunk("\n"));
+
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            final String formattedDate = df.format(c);
+
+            Font mOrderDetailsTitleFonts = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunks = new Chunk("Jakarta, "+formattedDate, mOrderDetailsTitleFonts);
+            Paragraph mOrderDetailsTitleParagraphs = new Paragraph(mOrderDetailsTitleChunks);
+            mOrderDetailsTitleParagraphs.setAlignment(Element.ALIGN_RIGHT);
+            document.add(mOrderDetailsTitleParagraphs);
+
+            document.add(new Chunk(""));
+            document.add(new Chunk(""));
+            document.add(new Chunk(""));
+
+            Font mOrderDetailsTitleFontss = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunkss = new Chunk("( "+user.get(SessionManager.KEY_NAMA)+" )   ", mOrderDetailsTitleFontss);
+            Paragraph mOrderDetailsTitleParagraphss = new Paragraph(mOrderDetailsTitleChunkss);
+            mOrderDetailsTitleParagraphss.setAlignment(Element.ALIGN_RIGHT);
+            document.add(mOrderDetailsTitleParagraphss);
+
+            document.close();
+
+            FileUtils.openFile(List_Sales.this, new File(dest));
+
+        } catch (IOException | DocumentException ie) {
+            Log.d("createPdf: Error " , ie.getLocalizedMessage());
+        } catch (ActivityNotFoundException ae) {
+            Toast.makeText(List_Sales.this, "No application found to open this file.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == PermissionsActivity.PERMISSIONS_GRANTED) {
+            createPdf(FileUtils.getAppPath(List_Sales.this) + "DataListSales.pdf");
+        } else {
+            Toast.makeText(List_Sales.this, "Permission not granted, Try again!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void createSales(String name, String type, String email,String Password, String jk, String alamat, String no_hp, String tgl_lahir) {

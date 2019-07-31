@@ -1,18 +1,16 @@
-package com.user.salestracking;
+package com.user.salestracking.list_adapter;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.user.salestracking.Data.DataListCall;
+import com.user.salestracking.R;
 
 import java.util.List;
 
@@ -21,10 +19,10 @@ import java.util.List;
  */
 
 //we need to extend the ArrayAdapter class as we are building an adapter
-public class ClosingAdapter extends ArrayAdapter<DataListClosing> {
+public class CallListAdapter extends ArrayAdapter<DataListCall> {
 
     //the list values in the List of type hero
-    List<DataListClosing> dataListClosings;
+    List<DataListCall> dataListCalls;
 
     //activity context
     Context context;
@@ -33,15 +31,14 @@ public class ClosingAdapter extends ArrayAdapter<DataListClosing> {
     int resource;
 
     //constructor initializing the values
-    public ClosingAdapter(Context context, int resource, List<DataListClosing> dataListClosings) {
-        super(context, resource, dataListClosings);
+    public CallListAdapter(Context context, int resource, List<DataListCall> dataListCalls) {
+        super(context, resource, dataListCalls);
         this.context = context;
         this.resource = resource;
-        this.dataListClosings = dataListClosings;
+        this.dataListCalls = dataListCalls;
     }
 
     //this will return the ListView Item as a View
-    @SuppressLint("SetTextI18n")
     @NonNull
     @Override
     public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -59,22 +56,18 @@ public class ClosingAdapter extends ArrayAdapter<DataListClosing> {
         TextView alamat = view.findViewById(R.id.tv_alamat);
         TextView no_hp = view.findViewById(R.id.tv_noHp);
         TextView date = view.findViewById(R.id.tv_date);
-        TextView nominal = view.findViewById(R.id.tv_nominal);
-        TextView type_transfer = view.findViewById(R.id.tv_type_transfer);
         TextView registerBy = view.findViewById(R.id.tv_registeredBy);
 
         //getting the hero of the specified position
-        DataListClosing dataListClosing = dataListClosings.get(position);
+        DataListCall dataListCall = dataListCalls.get(position);
 
         //adding values to the list item
 //        imageView.setImageDrawable(context.getResources().getDrawable(hero.getImage()));
-        textViewName.setText(dataListClosing.getName());
-        alamat.setText(dataListClosing.getAlamat());
-        no_hp.setText(dataListClosing.getNo_hp());
-        date.setText(dataListClosing.getDate_record());
-        type_transfer.setText(dataListClosing.getType_transfer());
-        nominal.setText("Rp. "+dataListClosing.getNominal());
-        registerBy.setText(dataListClosing.getAssign_by());
+        textViewName.setText(dataListCall.getName());
+        alamat.setText(dataListCall.getAlamat());
+        no_hp.setText(dataListCall.getNo_hp());
+        date.setText(dataListCall.getDate_record());
+        registerBy.setText(dataListCall.getAssign_by());
 
         //finally returning the view
         return view;
