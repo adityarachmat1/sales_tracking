@@ -6,6 +6,10 @@ import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -39,9 +43,11 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.user.salestracking.Api_Service.Api_url;
@@ -57,9 +63,12 @@ import com.user.salestracking.permission.PermissionsActivity;
 import com.user.salestracking.permission.PermissionsChecker;
 import com.user.salestracking.utils.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -714,7 +723,8 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             Document document = new Document();
 
             // Location to save
-            PdfWriter.getInstance(document, new FileOutputStream(dest));
+            PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(dest));
+//            pdfWriter.setPageEvent(new MyPdfPageEventHelper());
 
             // Open to write
             document.open();
@@ -741,18 +751,50 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             LineSeparator lineSeparator = new LineSeparator();
             lineSeparator.setLineColor(new BaseColor(0, 0, 0, 68));
 
+            try {
+                Paragraph c = new Paragraph();
+                InputStream ims = getAssets().open("zakatpedia.png");
+                Bitmap bmp = BitmapFactory.decodeStream(ims);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                Image image = Image.getInstance(stream.toByteArray());
+                image.setAbsolutePosition(10f,750f);
+                image.scaleToFit(850,78);
+                c.add(image);
+                document.add(c);
+            }
+            catch(IOException ex)
+            {
+                ex.printStackTrace();
+                return;
+            }
 
             Font mOrderDetailsTitleFont = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
-            Chunk mOrderDetailsTitleChunk = new Chunk("Sales Tracking", mOrderDetailsTitleFont);
+            Chunk mOrderDetailsTitleChunk = new Chunk("LAPORAN AKTIVITAS VISIT DONATUR", mOrderDetailsTitleFont);
             Paragraph mOrderDetailsTitleParagraph = new Paragraph(mOrderDetailsTitleChunk);
             mOrderDetailsTitleParagraph.setAlignment(Element.ALIGN_CENTER);
             document.add(mOrderDetailsTitleParagraph);
 
-            Font mOrderDetailsTitleFonta = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
-            Chunk mOrderDetailsTitleChunka = new Chunk("Data List Visit", mOrderDetailsTitleFonta);
-            Paragraph mOrderDetailsTitleParagrapha = new Paragraph(mOrderDetailsTitleChunka);
-            mOrderDetailsTitleParagrapha.setAlignment(Element.ALIGN_CENTER);
-            document.add(mOrderDetailsTitleParagrapha);
+            Font mOrderDetailsTitleFontz = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunkz = new Chunk("INISIATIF ZAKAT INDONESIA", mOrderDetailsTitleFontz);
+            Paragraph mOrderDetailsTitleParagraphz = new Paragraph(mOrderDetailsTitleChunkz);
+            mOrderDetailsTitleParagraphz.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagraphz);
+
+            Font mOrderDetailsTitleFontzZ = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunkzZ = new Chunk("SALES TRACKING", mOrderDetailsTitleFontzZ);
+            Paragraph mOrderDetailsTitleParagraphzZ = new Paragraph(mOrderDetailsTitleChunkzZ);
+            mOrderDetailsTitleParagraphzZ.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagraphzZ);
+//            Date DT = Calendar.getInstance().getTime();
+//            @SuppressLint("SimpleDateFormat") SimpleDateFormat dfs = new SimpleDateFormat("MMMM yyyy");
+//            final String formattedDates = dfs.format(DT);
+//
+//            Font mOrderDetailsTitleFonta = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+//            Chunk mOrderDetailsTitleChunka = new Chunk(formattedDates, mOrderDetailsTitleFonta);
+//            Paragraph mOrderDetailsTitleParagrapha = new Paragraph(mOrderDetailsTitleChunka);
+//            mOrderDetailsTitleParagrapha.setAlignment(Element.ALIGN_CENTER);
+//            document.add(mOrderDetailsTitleParagrapha);
 
             document.add(new Chunk(lineSeparator));
             document.add(new Chunk(lineSeparator));
@@ -809,12 +851,12 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
                 document.add(new Chunk(lineSeparator));
             }
 
-            Date c = Calendar.getInstance().getTime();
+            Date t = Calendar.getInstance().getTime();
 
             document.add(new Chunk("\n"));
 
             @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
-            final String formattedDate = df.format(c);
+            final String formattedDate = df.format(t);
 
             Font mOrderDetailsTitleFonts = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
             Chunk mOrderDetailsTitleChunks = new Chunk("Jakarta, "+formattedDate, mOrderDetailsTitleFonts);
@@ -879,6 +921,36 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
             AlertDialog alert = builder.create();
             alert.show();
 
+        }
+    }
+
+    class MyPdfPageEventHelper extends PdfPageEventHelper {
+
+        @Override
+        public void onEndPage(PdfWriter pdfWriter, Document document) {
+
+            System.out.println("Creating Waterwark Image in PDF");
+
+            try {
+                    InputStream ims = getAssets().open("zakatpedia.png");
+                    Bitmap bmp = BitmapFactory.decodeStream(ims);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    Image image = Image.getInstance(stream.toByteArray());
+                    image.scaleToFit(850,78);
+                    float pdfPageWidth = document.getPageSize().getWidth();
+                    float pdfPageHeight = document.getPageSize().getHeight();
+
+                    //Set waterMarkImage on whole page
+                    pdfWriter.getDirectContentUnder().addImage(image,
+                            pdfPageWidth, 0, 0, pdfPageHeight, 0, 0);
+
+                //Get width and height of whole page
+
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
