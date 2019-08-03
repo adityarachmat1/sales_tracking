@@ -109,7 +109,6 @@ public class List_Sales extends AppCompatActivity implements NavigationView.OnNa
     private List<DataDonatur> donaturList = new ArrayList<>();
     private List<DataSales> dataSales = new ArrayList<>();
     private Button btn_exportPDF;
-    private List<DataSales> salesList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -359,7 +358,7 @@ public class List_Sales extends AppCompatActivity implements NavigationView.OnNa
     private void dialogFormDetail(final int pos) {
         dialogs = new AlertDialog.Builder(List_Sales.this);
         inflater = getLayoutInflater();
-        dialogView = inflater.inflate(R.layout.dialog_detail_call, null);
+        dialogView = inflater.inflate(R.layout.dialog_detail_sales, null);
         dialogs.setView(dialogView);
         dialogs.setCancelable(true);
 
@@ -372,6 +371,7 @@ public class List_Sales extends AppCompatActivity implements NavigationView.OnNa
         TextView tv_hsl_aktivitas = (TextView) dialogView.findViewById(R.id.tv_hsl_aktivitas);
         TextView tv_date = (TextView) dialogView.findViewById(R.id.tv_date);
         TextView tv_registeredBy = (TextView) dialogView.findViewById(R.id.tv_registeredBy);
+        Button btn_delete = (Button) dialogView.findViewById(R.id.btn_delete);
 
         TextView tv_title_aktivitas = (TextView) dialogView.findViewById(R.id.tv_title_hasil_aktivitas);
         TextView tve_aktivitas = (TextView) dialogView.findViewById(R.id.tv_title_aktivitas);
@@ -394,6 +394,13 @@ public class List_Sales extends AppCompatActivity implements NavigationView.OnNa
 //        tv_hsl_aktivitas.setText(dataListCall.get(pos).getHasil_aktivitas());
 //        tv_date.setText(dataListCall.get(pos).getDate_record());
 //        tv_registeredBy.setText(dataListCall.get(pos).getAssign_by());
+        final String msg = "Anda yakin ingin menghapus "+ dataSales.get(pos).getName()+" dari daftar sales?";
+        btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                popupDelete(msg, pos);
+            }
+        });
 
         dialogs.show();
     }
@@ -683,10 +690,13 @@ public class List_Sales extends AppCompatActivity implements NavigationView.OnNa
 
     private void deleteNote(int position) {
         // deleting the note from db
-        db.deleteDonatur(donaturList.get(position));
+        db_sales.deleteDonatur(dataSales.get(position));
 
         // removing the note from the list
-        donaturList.remove(position);
+        dataSales.remove(position);
+        Intent intent = new Intent(getApplicationContext(), List_Sales.class);
+        startActivity(intent);
+        finish();
 
     }
 
@@ -885,7 +895,7 @@ public class List_Sales extends AppCompatActivity implements NavigationView.OnNa
 
         if (n != null) {
             // adding new note to array list at 0 position
-            salesList.add(0, n);
+            dataSales.add(0, n);
 
             // refreshing the list
             AlertDialog.Builder builder;
@@ -906,6 +916,26 @@ public class List_Sales extends AppCompatActivity implements NavigationView.OnNa
         }
     }
 
+    private void popupDelete(String message, final int pos){
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        deleteNote(pos);
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.setTitle("Delete?");
+        alert.show();
+    }
 
     @Override
     public void onBackPressed() {

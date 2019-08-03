@@ -457,12 +457,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_visit = (Button) dialogView.findViewById(R.id.btn_visit);
         btn_closing = (Button) dialogView.findViewById(R.id.btn_closing);
         btn_edit = (Button) dialogView.findViewById(R.id.btn_edit);
+        Button btn_delete = (Button) dialogView.findViewById(R.id.btn_delete);
 
-//        if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
+        if (user.get(SessionManager.KEY_TYPE_ACCOUNT).equals("3")){
             btn_edit.setVisibility(View.GONE);
-//        }else{
-//            btn_edit.setVisibility(View.VISIBLE);
-//        }
+            btn_delete.setVisibility(View.GONE);
+        }else{
+            btn_edit.setVisibility(View.VISIBLE);
+            btn_delete.setVisibility(View.VISIBLE);
+        }
 
         btn_call.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -489,6 +492,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(final View v) {
                 dialogEdit_donatur(pos);
+            }
+        });
+
+        final String msg = "Anda yakin ingin menghapus "+ donatur_list.get(pos).getName()+" dari daftar donatur?";
+        btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                popupDelete(msg, pos);
             }
         });
 
@@ -745,12 +756,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-//                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
-//                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
-//                }else {
-//                    request_Edit_donatur(txt_nama.getText().toString(),txt_email.getText().toString(), txt_alamat.getText().toString(),
-//                            spinner.getSelectedItem().toString(),tgl_lahir.getText().toString(),txt_noHp.getText().toString(),url, donatur_list.get(pos).getId());
-//                }
+                if (txt_nama.getText().toString().equals("") || txt_alamat.getText().toString().equals("") || txt_email.getText().toString().equals("") || tgl_lahir.getText().toString().equals("") || txt_noHp.getText().toString().equals("")){
+                    Toast.makeText(getApplicationContext(), "field tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                }else {
+                    DataDonatur dataDonatur = new DataDonatur();
+                    dataDonatur.setName(txt_nama.getText().toString());
+                    dataDonatur.setAlamat(txt_alamat.getText().toString());
+                    dataDonatur.setEmail(txt_email.getText().toString());
+                    dataDonatur.setNo_hp(txt_noHp.getText().toString());
+                    dataDonatur.setJenis_kelamin(spinner.getSelectedItem().toString());
+                    dataDonatur.setTanggal_lahir(tgl_lahir.getText().toString());
+                    update(dataDonatur, pos);
+                }
 
             }
         });
@@ -1286,7 +1303,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private void updateNote(DataDonatur dataDonatur, int position) {
+    private void update(DataDonatur dataDonatur, int position) {
         DataDonatur n = donaturList.get(position);
         // updating note text
         n.setName(dataDonatur.getName());
@@ -1301,7 +1318,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // refreshing the list
         donaturList.set(position, n);
-        adapter.notifyDataSetChanged();
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void deleteNote(int position) {
@@ -1310,9 +1329,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // removing the note from the list
         donaturList.remove(position);
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+        finish();
 
     }
 
+    private void popupDelete(String message, final int pos){
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        deleteNote(pos);
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.setTitle("Delete?");
+        alert.show();
+    }
 
     @Override
     public void onBackPressed() {

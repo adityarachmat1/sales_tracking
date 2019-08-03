@@ -9,9 +9,9 @@
                   android:required="true" />
 
     <application
-        android:icon="@drawable/zakatpedia"
+        android:icon="@drawable/izi"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/zakatpedia"
+        android:roundIcon="@drawable/izi"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".Splash"

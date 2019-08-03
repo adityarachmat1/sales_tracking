@@ -44,6 +44,7 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
@@ -735,7 +736,11 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
             Document document = new Document();
 
             // Location to save
-            PdfWriter.getInstance(document, new FileOutputStream(dest));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(dest));
+            Rectangle rect = new Rectangle(30, 30, 550, 800);
+//            writer.setBoxSize("art", rect);
+//            HeaderFooterPageEvent event = new HeaderFooterPageEvent(getApplicationContext());
+//            writer.setPageEvent(event);
 
             // Open to write
             document.open();
@@ -750,7 +755,7 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
              * Variables for further use....
              */
             BaseColor mColorAccent = new BaseColor(0, 153, 204, 255);
-            float mHeadingFontSize = 16.0f;
+            float mHeadingFontSize = 18.0f;
             float mValueFontSize = 20.0f;
 
             /**
@@ -765,13 +770,13 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
 
             try {
                 Paragraph c = new Paragraph();
-                InputStream ims = getAssets().open("zakatpedia.png");
+                InputStream ims = getAssets().open("izi.jpg");
                 Bitmap bmp = BitmapFactory.decodeStream(ims);
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
                 Image image = Image.getInstance(stream.toByteArray());
-                image.setAbsolutePosition(10f,750f);
-                image.scaleToFit(850,78);
+                image.scaleToFit(950,85);
+                image.setAlignment(Element.ALIGN_CENTER);
                 c.add(image);
                 document.add(c);
             }
@@ -781,37 +786,38 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
                 return;
             }
 
-            Font mOrderDetailsTitleFont = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Font mOrderDetailsTitleFont = new Font(urName, 20.0f, Font.NORMAL, BaseColor.BLACK);
             Chunk mOrderDetailsTitleChunk = new Chunk("LAPORAN AKTIVITAS CALL DONATUR", mOrderDetailsTitleFont);
             Paragraph mOrderDetailsTitleParagraph = new Paragraph(mOrderDetailsTitleChunk);
             mOrderDetailsTitleParagraph.setAlignment(Element.ALIGN_CENTER);
             document.add(mOrderDetailsTitleParagraph);
 
-            Font mOrderDetailsTitleFontz = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
-            Chunk mOrderDetailsTitleChunkz = new Chunk("INISIATIF ZAKAT INDONESIA", mOrderDetailsTitleFontz);
+            Font mOrderDetailsTitleFontz = new Font(urName, 20.0f, Font.NORMAL, BaseColor.BLACK);
+            Chunk mOrderDetailsTitleChunkz = new Chunk("SALES TRACKING", mOrderDetailsTitleFontz);
             Paragraph mOrderDetailsTitleParagraphz = new Paragraph(mOrderDetailsTitleChunkz);
             mOrderDetailsTitleParagraphz.setAlignment(Element.ALIGN_CENTER);
             document.add(mOrderDetailsTitleParagraphz);
 
-            Font mOrderDetailsTitleFontzZ = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
-            Chunk mOrderDetailsTitleChunkzZ = new Chunk("SALES TRACKING", mOrderDetailsTitleFontzZ);
+            String alamat = "Jl. Raya Condet No 54 D-E Batu Ampar Jakarta Timur ";
+
+            Font mOrderDetailsTitleFontzZ = new Font(urName, 20.0f, Font.NORMAL, BaseColor.GRAY);
+            Chunk mOrderDetailsTitleChunkzZ = new Chunk(alamat, mOrderDetailsTitleFontzZ);
             Paragraph mOrderDetailsTitleParagraphzZ = new Paragraph(mOrderDetailsTitleChunkzZ);
             mOrderDetailsTitleParagraphzZ.setAlignment(Element.ALIGN_CENTER);
             document.add(mOrderDetailsTitleParagraphzZ);
 //            Date DT = Calendar.getInstance().getTime();
 //            @SuppressLint("SimpleDateFormat") SimpleDateFormat dfs = new SimpleDateFormat("MMMM yyyy");
 //            final String formattedDates = dfs.format(DT);
+
+            String telp = "Telp:(021)87787325 Fax.(021)87787603";
 //
-//            Font mOrderDetailsTitleFonta = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
-//            Chunk mOrderDetailsTitleChunka = new Chunk(formattedDates, mOrderDetailsTitleFonta);
-//            Paragraph mOrderDetailsTitleParagrapha = new Paragraph(mOrderDetailsTitleChunka);
-//            mOrderDetailsTitleParagrapha.setAlignment(Element.ALIGN_CENTER);
-//            document.add(mOrderDetailsTitleParagrapha);
-            document.add(new Chunk(lineSeparator));
-            document.add(new Chunk(lineSeparator));
-            document.add(new Chunk(lineSeparator));
-            document.add(new Chunk(lineSeparator));
-            document.add(new Chunk(lineSeparator));
+            Font mOrderDetailsTitleFonta = new Font(urName, 20.0f, Font.NORMAL, BaseColor.GRAY);
+            Chunk mOrderDetailsTitleChunka = new Chunk(telp, mOrderDetailsTitleFonta);
+            Paragraph mOrderDetailsTitleParagrapha = new Paragraph(mOrderDetailsTitleChunka);
+            mOrderDetailsTitleParagrapha.setAlignment(Element.ALIGN_CENTER);
+            document.add(mOrderDetailsTitleParagrapha);
+
+
             document.add(new Chunk(lineSeparator));
 
             document.add(new Chunk("\n"));
@@ -825,41 +831,36 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
                 document.add(mOrderIdParagraphc);
 
 
-                Font mOrderIdFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Font mOrderIdFont = new Font(urName, mHeadingFontSize, Font.NORMAL, BaseColor.BLACK);
                 Chunk mOrderIdChunk = new Chunk("Nama Donatur: "+ dataListCalls.get(i).getName(), mOrderIdFont);
                 Paragraph mOrderIdParagraph = new Paragraph(mOrderIdChunk);
                 document.add(mOrderIdParagraph);
 
-                Font mOrderIdValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Font mOrderIdValueFont = new Font(urName, mHeadingFontSize, Font.NORMAL, BaseColor.BLACK);
                 Chunk mOrderIdValueChunk = new Chunk("Jemput Donasi: "+ dataListCalls.get(i).getHasil_aktivitas(), mOrderIdValueFont);
                 Paragraph mOrderIdValueParagraph = new Paragraph(mOrderIdValueChunk);
                 document.add(mOrderIdValueParagraph);
 
-                Font mOrderAcNameFonta = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Font mOrderAcNameFonta = new Font(urName, mHeadingFontSize, Font.NORMAL, BaseColor.BLACK);
                 Chunk mOrderAcNameChunka = new Chunk("Email: "+ dataListCalls.get(i).getEmail(), mOrderAcNameFonta);
                 Paragraph mOrderAcNameParagrapha = new Paragraph(mOrderAcNameChunka);
                 document.add(mOrderAcNameParagrapha);
 
-                Font mOrderDateFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Font mOrderDateFont = new Font(urName, mHeadingFontSize, Font.NORMAL, BaseColor.BLACK);
                 Chunk mOrderDateChunk = new Chunk("Alamat: "+ dataListCalls.get(i).getAlamat(), mOrderDateFont);
                 Paragraph mOrderDateParagraph = new Paragraph(mOrderDateChunk);
                 document.add(mOrderDateParagraph);
 
-                Font mOrderDateValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Font mOrderDateValueFont = new Font(urName, mHeadingFontSize, Font.NORMAL, BaseColor.BLACK);
                 Chunk mOrderDateValueChunk = new Chunk("No. Hp : "+ dataListCalls.get(i).getNo_hp(), mOrderDateValueFont);
                 Paragraph mOrderDateValueParagraph = new Paragraph(mOrderDateValueChunk);
                 document.add(mOrderDateValueParagraph);
 
-                Font mOrderAcNameValueFont = new Font(urName, mValueFontSize, Font.NORMAL, BaseColor.BLACK);
+                Font mOrderAcNameValueFont = new Font(urName, mHeadingFontSize, Font.NORMAL, BaseColor.BLACK);
                 Chunk mOrderAcNameValueChunk = new Chunk("Catatan: "+ dataListCalls.get(i).getCatatan(), mOrderAcNameValueFont);
                 Paragraph mOrderAcNameValueParagraph = new Paragraph(mOrderAcNameValueChunk);
                 document.add(mOrderAcNameValueParagraph);
 
-                document.add(new Chunk(lineSeparator));
-                document.add(new Chunk(lineSeparator));
-                document.add(new Chunk(lineSeparator));
-                document.add(new Chunk(lineSeparator));
-                document.add(new Chunk(lineSeparator));
                 document.add(new Chunk(lineSeparator));
             }
 
@@ -870,17 +871,15 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
             @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd MMMM yyyy");
             final String formattedDate = df.format(c);
 
-            Font mOrderDetailsTitleFonts = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Font mOrderDetailsTitleFonts = new Font(urName, 20.0f, Font.NORMAL, BaseColor.BLACK);
             Chunk mOrderDetailsTitleChunks = new Chunk("Jakarta, "+formattedDate, mOrderDetailsTitleFonts);
             Paragraph mOrderDetailsTitleParagraphs = new Paragraph(mOrderDetailsTitleChunks);
             mOrderDetailsTitleParagraphs.setAlignment(Element.ALIGN_RIGHT);
             document.add(mOrderDetailsTitleParagraphs);
 
             document.add(new Chunk(""));
-            document.add(new Chunk(""));
-            document.add(new Chunk(""));
 
-            Font mOrderDetailsTitleFontss = new Font(urName, 24.0f, Font.NORMAL, BaseColor.BLACK);
+            Font mOrderDetailsTitleFontss = new Font(urName, 20.0f, Font.NORMAL, BaseColor.BLACK);
             Chunk mOrderDetailsTitleChunkss = new Chunk("( "+user.get(SessionManager.KEY_NAMA)+" )   ", mOrderDetailsTitleFontss);
             Paragraph mOrderDetailsTitleParagraphss = new Paragraph(mOrderDetailsTitleChunkss);
             mOrderDetailsTitleParagraphss.setAlignment(Element.ALIGN_RIGHT);
