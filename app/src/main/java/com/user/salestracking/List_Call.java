@@ -900,7 +900,11 @@ public class List_Call extends AppCompatActivity implements NavigationView.OnNav
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == PermissionsActivity.PERMISSIONS_GRANTED) {
-            createPdf(FileUtils.getAppPath(List_Call.this) + "DataListCall.pdf");
+            if (dataListCalls.size() > 0){
+                createPdf(FileUtils.getAppPath(List_Call.this) + "DataListCall.pdf");
+            }else {
+                Toast.makeText(List_Call.this, "List Call Kosong", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(List_Call.this, "Permission not granted, Try again!", Toast.LENGTH_SHORT).show();
         }

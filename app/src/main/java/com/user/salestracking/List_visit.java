@@ -885,7 +885,11 @@ public class List_visit extends AppCompatActivity implements NavigationView.OnNa
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == PermissionsActivity.PERMISSIONS_GRANTED) {
-            createPdf(FileUtils.getAppPath(List_visit.this) + "DataListVisit.pdf");
+            if (dataListCalls.size() > 0){
+                createPdf(FileUtils.getAppPath(List_visit.this) + "DataListVisit.pdf");
+            }else {
+                Toast.makeText(List_visit.this, "List Visit Kosong", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(List_visit.this, "Permission not granted, Try again!", Toast.LENGTH_SHORT).show();
         }

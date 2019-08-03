@@ -957,6 +957,11 @@ public class List_closing extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == PermissionsActivity.PERMISSIONS_GRANTED) {
+            if (dataListClosing.size() > 0){
+                createPdf(FileUtils.getAppPath(List_closing.this) + "DataListClosing.pdf");
+            }else {
+                Toast.makeText(List_closing.this, "List Closing Kosong", Toast.LENGTH_SHORT).show();
+            }
             createPdf(FileUtils.getAppPath(List_closing.this) + "DataListClosing.pdf");
         } else {
             Toast.makeText(List_closing.this, "Permission not granted, Try again!", Toast.LENGTH_SHORT).show();
